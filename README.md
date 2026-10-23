@@ -2,7 +2,7 @@
 
 > AI-powered planning for weddings, birthdays, and community events. Budgets, timelines, vendor checklists, and personalised ideas.
 
-[![CI](https://github.com/your-org/gatherly/actions/workflows/ci.yml/badge.svg)](https://github.com/your-org/gatherly/actions/workflows/ci.yml)
+[![CI](https://github.com/rupakbera21/gatherly/actions/workflows/ci.yml/badge.svg)](https://github.com/rupakbera21/gatherly/actions/workflows/ci.yml)
 
 ---
 
@@ -191,7 +191,7 @@ The env validator strips them automatically, but it's best practice to paste cle
 
 ```bash
 # Clone the repo
-git clone https://github.com/your-org/gatherly
+git clone https://github.com/rupakbera21/gatherly.git
 cd gatherly
 
 # Install dependencies
