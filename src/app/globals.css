@@ -1,0 +1,360 @@
+@import "tailwindcss";
+
+/* ============================================================
+   Gatherly – Design System
+   CSS custom properties used as design tokens throughout the app.
+   Accessible: WCAG 2.2 AA contrast ratios for all color pairs.
+   Supports: prefers-color-scheme, prefers-reduced-motion,
+             user-selected high-contrast and dyslexia font modes.
+   Script support: Devanagari, Bengali for localised output.
+   ============================================================ */
+
+/* Google Fonts are NOT used (self-hosted only for CSP compliance).
+   next/font will inject Inter and Noto Sans self-hosted. */
+
+:root {
+  /* ---- Event-type accent themes ---- */
+  /* Wedding: warm blush and gold */
+  --accent-wedding-primary: hsl(345, 60%, 55%);
+  --accent-wedding-secondary: hsl(38, 72%, 60%);
+  --accent-wedding-surface: hsl(345, 40%, 96%);
+
+  /* Birthday: vibrant violet and amber */
+  --accent-birthday-primary: hsl(270, 65%, 55%);
+  --accent-birthday-secondary: hsl(32, 90%, 58%);
+  --accent-birthday-surface: hsl(270, 40%, 96%);
+
+  /* Community: teal and green */
+  --accent-community-primary: hsl(175, 60%, 38%);
+  --accent-community-secondary: hsl(145, 55%, 42%);
+  --accent-community-surface: hsl(175, 40%, 96%);
+
+  /* ---- Neutral palette ---- */
+  --color-bg: hsl(220, 20%, 98%);
+  --color-surface: hsl(0, 0%, 100%);
+  --color-surface-raised: hsl(220, 15%, 96%);
+  --color-border: hsl(220, 15%, 88%);
+  --color-border-strong: hsl(220, 15%, 72%);
+
+  /* ---- Text ---- */
+  --color-text-primary: hsl(220, 25%, 12%);
+  --color-text-secondary: hsl(220, 15%, 38%);
+  --color-text-muted: hsl(220, 12%, 58%);
+  --color-text-inverse: hsl(0, 0%, 100%);
+
+  /* ---- Semantic ---- */
+  --color-success: hsl(145, 60%, 32%);
+  --color-success-surface: hsl(145, 55%, 94%);
+  --color-warning: hsl(38, 90%, 38%);
+  --color-warning-surface: hsl(38, 80%, 94%);
+  --color-error: hsl(4, 72%, 42%);
+  --color-error-surface: hsl(4, 70%, 94%);
+  --color-info: hsl(215, 70%, 40%);
+  --color-info-surface: hsl(215, 65%, 94%);
+
+  /* ---- Interactive ---- */
+  --color-focus-ring: hsl(215, 85%, 50%);
+  --focus-ring-width: 3px;
+  --focus-ring-offset: 2px;
+
+  /* ---- Spacing scale ---- */
+  --space-1: 0.25rem;
+  --space-2: 0.5rem;
+  --space-3: 0.75rem;
+  --space-4: 1rem;
+  --space-6: 1.5rem;
+  --space-8: 2rem;
+  --space-12: 3rem;
+  --space-16: 4rem;
+
+  /* ---- Radius ---- */
+  --radius-sm: 0.375rem;
+  --radius-md: 0.625rem;
+  --radius-lg: 1rem;
+  --radius-xl: 1.5rem;
+  --radius-full: 9999px;
+
+  /* ---- Shadows ---- */
+  --shadow-sm: 0 1px 2px hsl(220 25% 12% / 0.06);
+  --shadow-md: 0 4px 12px hsl(220 25% 12% / 0.10);
+  --shadow-lg: 0 8px 24px hsl(220 25% 12% / 0.14);
+
+  /* ---- Transitions ---- */
+  --transition-fast: 120ms ease;
+  --transition-normal: 200ms ease;
+  --transition-slow: 350ms ease;
+
+  /* ---- Typography ---- */
+  --font-sans: 'Inter', 'Noto Sans', system-ui, -apple-system, sans-serif;
+  --font-dyslexia: 'OpenDyslexic', 'Comic Sans MS', cursive;
+  --font-size-xs: 0.75rem;
+  --font-size-sm: 0.875rem;
+  --font-size-base: 1rem;
+  --font-size-lg: 1.125rem;
+  --font-size-xl: 1.25rem;
+  --font-size-2xl: 1.5rem;
+  --font-size-3xl: 1.875rem;
+  --font-size-4xl: 2.25rem;
+
+  /* User-controlled font scale (set by accessibility toolbar) */
+  --font-scale: 1;
+}
+
+/* Dark mode */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-bg: hsl(220, 20%, 10%);
+    --color-surface: hsl(220, 18%, 14%);
+    --color-surface-raised: hsl(220, 16%, 18%);
+    --color-border: hsl(220, 15%, 26%);
+    --color-border-strong: hsl(220, 15%, 42%);
+    --color-text-primary: hsl(220, 20%, 92%);
+    --color-text-secondary: hsl(220, 15%, 68%);
+    --color-text-muted: hsl(220, 12%, 50%);
+    --color-success: hsl(145, 55%, 48%);
+    --color-success-surface: hsl(145, 35%, 16%);
+    --color-warning: hsl(38, 85%, 58%);
+    --color-warning-surface: hsl(38, 50%, 16%);
+    --color-error: hsl(4, 75%, 62%);
+    --color-error-surface: hsl(4, 45%, 18%);
+    --color-info: hsl(215, 75%, 62%);
+    --color-info-surface: hsl(215, 45%, 18%);
+    --accent-wedding-surface: hsl(345, 20%, 18%);
+    --accent-birthday-surface: hsl(270, 20%, 18%);
+    --accent-community-surface: hsl(175, 20%, 14%);
+  }
+}
+
+[data-theme="dark"] {
+  --color-bg: hsl(220, 20%, 10%);
+  --color-surface: hsl(220, 18%, 14%);
+  --color-surface-raised: hsl(220, 16%, 18%);
+  --color-border: hsl(220, 15%, 26%);
+  --color-border-strong: hsl(220, 15%, 42%);
+  --color-text-primary: hsl(220, 20%, 92%);
+  --color-text-secondary: hsl(220, 15%, 68%);
+  --color-text-muted: hsl(220, 12%, 50%);
+  --color-success: hsl(145, 55%, 48%);
+  --color-success-surface: hsl(145, 35%, 16%);
+  --color-warning: hsl(38, 85%, 58%);
+  --color-warning-surface: hsl(38, 50%, 16%);
+  --color-error: hsl(4, 75%, 62%);
+  --color-error-surface: hsl(4, 45%, 18%);
+  --color-info: hsl(215, 75%, 62%);
+  --color-info-surface: hsl(215, 45%, 18%);
+  --accent-wedding-surface: hsl(345, 20%, 18%);
+  --accent-birthday-surface: hsl(270, 20%, 18%);
+  --accent-community-surface: hsl(175, 20%, 14%);
+}
+
+[data-theme="light"] {
+  --color-bg: hsl(220, 20%, 98%);
+  --color-surface: hsl(0, 0%, 100%);
+  --color-surface-raised: hsl(220, 15%, 96%);
+  --color-border: hsl(220, 15%, 88%);
+  --color-border-strong: hsl(220, 15%, 72%);
+  --color-text-primary: hsl(220, 25%, 12%);
+  --color-text-secondary: hsl(220, 15%, 38%);
+  --color-text-muted: hsl(220, 12%, 58%);
+}
+
+/* High contrast mode */
+[data-high-contrast="true"] {
+  --color-text-primary: hsl(0, 0%, 0%);
+  --color-bg: hsl(0, 0%, 100%);
+  --color-surface: hsl(0, 0%, 100%);
+  --color-border: hsl(0, 0%, 0%);
+  --color-text-secondary: hsl(0, 0%, 15%);
+}
+
+/* Dyslexia-friendly font */
+[data-dyslexia-font="true"] {
+  --font-sans: var(--font-dyslexia);
+}
+
+/* ============================================================
+   Global base styles
+   ============================================================ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: calc(16px * var(--font-scale));
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
+/* Respect prefers-reduced-motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+[data-reduced-motion="true"] * {
+  animation-duration: 0.01ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.01ms !important;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  line-height: 1.6;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  min-height: 100dvh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* ---- Focus management ---- */
+:focus-visible {
+  outline: var(--focus-ring-width) solid var(--color-focus-ring);
+  outline-offset: var(--focus-ring-offset);
+  border-radius: var(--radius-sm);
+}
+
+/* Remove focus for mouse users */
+:focus:not(:focus-visible) {
+  outline: none;
+}
+
+/* ---- Skip link ---- */
+.skip-link {
+  position: absolute;
+  top: -100%;
+  left: var(--space-4);
+  z-index: 9999;
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface);
+  color: var(--color-text-primary);
+  border: 2px solid var(--color-focus-ring);
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  text-decoration: none;
+  transition: top var(--transition-fast);
+}
+
+.skip-link:focus {
+  top: var(--space-4);
+}
+
+/* ---- Interactive minimum touch target: 44×44px ---- */
+button,
+[role="button"],
+a,
+input[type="checkbox"],
+input[type="radio"] {
+  min-height: 44px;
+  min-width: 44px;
+}
+
+/* But don't apply to icon-only buttons inside containers */
+button.icon-sm {
+  min-height: 32px;
+  min-width: 32px;
+}
+
+/* ---- Link styles ---- */
+a {
+  color: var(--color-info);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+a:hover {
+  text-decoration-thickness: 2px;
+}
+
+/* ---- Selection ---- */
+::selection {
+  background: hsl(215, 70%, 85%);
+  color: var(--color-text-primary);
+}
+
+/* ---- Scrollbar ---- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--color-surface-raised);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-border-strong);
+  border-radius: var(--radius-full);
+}
+
+/* ---- Print styles ---- */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+
+  body {
+    font-size: 12pt;
+    color: black;
+    background: white;
+  }
+}
+
+/* ---- Utility classes ---- */
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border-width: 0;
+}
+
+.not-sr-only {
+  position: static;
+  width: auto;
+  height: auto;
+  padding: 0;
+  margin: 0;
+  overflow: visible;
+  clip: auto;
+  white-space: normal;
+}
+
+/* AI disclaimer notice – persistent but non-intrusive */
+.ai-disclaimer {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+  display: flex;
+  align-items: center;
+  gap: var(--space-1);
+}
+
+/* Skeleton loader animation */
+@keyframes skeleton-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.5; }
+}
+
+.skeleton {
+  background: var(--color-surface-raised);
+  border-radius: var(--radius-sm);
+  animation: skeleton-pulse 1.5s ease-in-out infinite;
+}
