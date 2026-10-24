@@ -132,7 +132,7 @@ See concurrency test: `src/__tests__/integration/concurrency.test.ts`
 | Metric | Measured Value | Standard / Limit |
 |---|---|---|
 | **Non-Build Repo Footprint** | **1.07 MB** | < 10 MB strict limit |
-| **Automated Test Suite** | **117 passed / 117 total** across 19 suites | 100% pass rate in ~5.7s |
+| **Automated Test Suite** | **227 passed / 227 total** across 31 suites | 100% pass rate in ~6.5s |
 | **Next.js 16 Build Status** | **23/23 routes compiled** (Static & Partial Prerender) | Turbopack zero-error build |
 | **Accessibility Audit** | **0 violations** (`jest-axe` automated suite) | WCAG 2.2 AA compliant |
 | **Budget Sandbox Latency** | **< 1 ms** (pure client-side integer math) | Zero-LLM what-if rebalancing |
@@ -178,8 +178,8 @@ Features:
 | `GROQ_API_KEY` | ✅ | Groq API key |
 | `UPSTASH_REDIS_REST_URL` | ✅ | Upstash Redis REST URL |
 | `UPSTASH_REDIS_REST_TOKEN` | ✅ | Upstash Redis REST token |
-| `GEMINI_MODEL` | ❌ | Override Gemini model (default: `gemini-flash-latest`) |
-| `GROQ_MODEL` | ❌ | Override Groq model (default: `llama-3.3-70b-versatile`) |
+| `GEMINI_MODEL` | ❌ | Override Gemini model (default: `gemini-3.5-flash`) |
+| `GROQ_MODEL` | ❌ | Override Groq model (default: `qwen/qwen3.8-27b`) |
 | `NEXT_PUBLIC_BUILD_COMMIT` | ❌ | Build commit hash (set by CI) |
 
 **Important:** Paste values without surrounding quotes or whitespace.

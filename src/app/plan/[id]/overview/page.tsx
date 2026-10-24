@@ -12,6 +12,37 @@ import React, { use, useState } from "react";
 import Link from "next/link";
 import { formatCurrency } from "@/domain/money";
 import { useGatherlyStore } from "@/store";
+import { announce } from "@/services/announce";
+
+/**
+ * Execute task functions concurrently with a strict worker cap (concurrency cap 3-4)
+ * and settle all results via Promise.allSettled.
+ */
+async function settleWithConcurrencyCap<T>(
+  taskFns: (() => Promise<T>)[],
+  cap = 3
+): Promise<PromiseSettledResult<T>[]> {
+  const results: PromiseSettledResult<T>[] = new Array(taskFns.length);
+  let nextIdx = 0;
+
+  async function worker() {
+    while (nextIdx < taskFns.length) {
+      const idx = nextIdx++;
+      const fn = taskFns[idx];
+      if (!fn) continue;
+      try {
+        const val = await fn();
+        results[idx] = { status: "fulfilled", value: val };
+      } catch (reason) {
+        results[idx] = { status: "rejected", reason };
+      }
+    }
+  }
+
+  const workerCount = Math.min(cap, taskFns.length);
+  await Promise.all(Array.from({ length: workerCount }, () => worker()));
+  return results;
+}
 
 interface OverviewPageProps {
   params: Promise<{ id: string }>;
@@ -57,6 +88,7 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
   async function handleGenerateFullPlan() {
     if (!plan) return;
     setIsGeneratingAll(true);
+    announce("Generation started. Building complete event plan...");
     setGenerationStatus({
       budget: "loading",
       timeline: "loading",
@@ -142,12 +174,19 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
       },
     ];
 
-    // Concurrency cap: execute with Promise.allSettled
-    await Promise.allSettled(tasks.map((t) => t.run()));
+    // Concurrency cap: execute with Promise.allSettled and a concurrency cap of 3
+    const settled = await settleWithConcurrencyCap(tasks.map((t) => t.run), 3);
+    const hasFailure = settled.some((r) => r.status === "rejected");
 
     currentPlan.updatedAt = new Date().toISOString();
     setPlan(currentPlan);
     setIsGeneratingAll(false);
+
+    if (hasFailure) {
+      announce("Generation failed. Some plan modules encountered errors.");
+    } else {
+      announce("Generation finished. Event plan is ready.");
+    }
   }
 
   const isBrandNewPlan =
@@ -211,6 +250,13 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
               }`}
               style={{ width: `${budgetUtilization}%` }}
             />
+          </div>
+          <div className="mt-2 text-xs font-semibold">
+            {totalSpent > plan.profile.budgetMinor ? (
+              <span className="text-red-600 dark:text-red-400">⚠️ Over Budget</span>
+            ) : (
+              <span className="text-emerald-600 dark:text-emerald-400">✓ On Budget</span>
+            )}
           </div>
         </div>
 

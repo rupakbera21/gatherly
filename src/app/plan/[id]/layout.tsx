@@ -73,8 +73,6 @@ function PlanLayoutInner({ children, params }: PlanLayoutProps) {
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-6">
-      {/* Polite single aria-live region for non-spammy async status announcements */}
-      <div aria-live="polite" aria-atomic="true" className="sr-only" id="a11y-live-region" />
 
       {/* Plan Header */}
       <header className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm">

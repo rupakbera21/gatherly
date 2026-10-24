@@ -44,9 +44,9 @@ export class GroqProvider implements LLMProvider {
       });
     }
 
-    // Default: llama-3.3-70b-versatile — stable Groq-hosted non-reasoning instruct model.
+    // Default: qwen/qwen3.8-27b — stable Groq-hosted instruct model.
     // Override via GROQ_MODEL env var if needed.
-    const model = process.env["GROQ_MODEL"] || "llama-3.3-70b-versatile";
+    const model = process.env["GROQ_MODEL"] || "qwen/qwen3.8-27b";
     const timeoutMs = opts.timeoutMs ?? 20_000;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -211,7 +211,7 @@ export class GroqProvider implements LLMProvider {
       });
     }
 
-    const model = process.env["GROQ_MODEL"] || "llama-3.3-70b-versatile";
+    const model = process.env["GROQ_MODEL"] || "qwen/qwen3.8-27b";
     const controller = new AbortController();
     const timeoutMs = opts.timeoutMs ?? 30_000;
     const timer = setTimeout(() => controller.abort(), timeoutMs);

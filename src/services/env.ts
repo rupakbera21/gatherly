@@ -78,10 +78,10 @@ export function resetEnvForTest(): void {
 
 /** Returns the Gemini model name, preferring the env override. */
 export function geminiModel(): string {
-  return getEnv().GEMINI_MODEL ?? "gemini-2.5-flash";
+  return getEnv().GEMINI_MODEL ?? "gemini-3.5-flash";
 }
 
 /** Returns the Groq model name, preferring the env override. */
 export function groqModel(): string {
-  return getEnv().GROQ_MODEL ?? "llama-3.3-70b-versatile";
+  return getEnv().GROQ_MODEL ?? "qwen/qwen3.8-27b";
 }

@@ -22,8 +22,13 @@ try {
     if (!trimmed || trimmed.startsWith("#")) continue;
     const [key, ...rest] = trimmed.split("=");
     if (key && rest.length > 0) {
+      const k = key.trim();
       const value = rest.join("=").trim().replace(/^["'](.*)["']$/, "$1");
-      process.env[key.trim()] = value;
+      if (process.env.NO_MODEL_OVERRIDES === "1" && (k === "GEMINI_MODEL" || k === "GROQ_MODEL")) {
+        // Do not load model overrides from .env.local when verifying pure code defaults
+        continue;
+      }
+      process.env[k] = value;
     }
   }
 } catch {
@@ -46,29 +51,32 @@ async function smokeGemini() {
   const key = process.env.GEMINI_API_KEY?.trim().replace(/^["'](.*)["']$/, "$1");
   if (!key) return fail("Gemini", "GEMINI_API_KEY not set");
 
+  const model = process.env.GEMINI_MODEL || "gemini-3.5-flash";
   try {
-    const model = process.env.GEMINI_MODEL || "gemini-2.5-flash";
-    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${key}`;
+    const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`;
     const res = await fetch(url, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
+      headers: {
+        "Content-Type": "application/json",
+        "x-goog-api-key": key,
+      },
       body: JSON.stringify({
         contents: [{ parts: [{ text: "Reply with the single word: ready" }] }],
-        generationConfig: { maxOutputTokens: 10 },
+        generationConfig: { maxOutputTokens: 100 },
       }),
       signal: AbortSignal.timeout(30000),
     });
 
     if (!res.ok) {
       const body = await res.text();
-      return fail("Gemini", `HTTP ${res.status}: ${body.slice(0, 200)}`);
+      return fail("Gemini", `(${model}) HTTP ${res.status}: ${body.slice(0, 200)}`);
     }
 
     const json = await res.json();
     const text = json?.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-    pass("Gemini", `responded: "${text.trim().slice(0, 50)}"`);
+    pass("Gemini", `(${model}) responded: "${text.trim().slice(0, 50)}"`);
   } catch (err) {
-    fail("Gemini", err?.message ?? String(err));
+    fail("Gemini", `(${model}) ${err?.message ?? String(err)}`);
   }
 }
 
@@ -76,8 +84,8 @@ async function smokeGroq() {
   const key = process.env.GROQ_API_KEY?.trim().replace(/^["'](.*)["']$/, "$1");
   if (!key) return fail("Groq", "GROQ_API_KEY not set");
 
+  const model = process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
   try {
-    const model = process.env.GROQ_MODEL || "qwen/qwen3.8-27b";
     const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
       method: "POST",
       headers: {
@@ -94,14 +102,14 @@ async function smokeGroq() {
 
     if (!res.ok) {
       const body = await res.text();
-      return fail("Groq", `HTTP ${res.status}: ${body.slice(0, 200)}`);
+      return fail("Groq", `(${model}) HTTP ${res.status}: ${body.slice(0, 200)}`);
     }
 
     const json = await res.json();
     const text = json?.choices?.[0]?.message?.content ?? "";
-    pass("Groq", `responded: "${text.trim().slice(0, 50)}"`);
+    pass("Groq", `(${model}) responded: "${text.trim().slice(0, 50)}"`);
   } catch (err) {
-    fail("Groq", err?.message ?? String(err));
+    fail("Groq", `(${model}) ${err?.message ?? String(err)}`);
   }
 }
 

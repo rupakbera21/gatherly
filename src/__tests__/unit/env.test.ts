@@ -105,7 +105,7 @@ describe("env validation", () => {
     const { geminiModel } = jest.requireActual<typeof import("@/services/env")>(
       "@/services/env"
     );
-    expect(geminiModel()).toBe("gemini-2.5-flash");
+    expect(geminiModel()).toBe("gemini-3.5-flash");
   });
 
   it("returns override Gemini model when set", () => {
@@ -124,6 +124,6 @@ describe("env validation", () => {
     const { groqModel } = jest.requireActual<typeof import("@/services/env")>(
       "@/services/env"
     );
-    expect(groqModel()).toBe("llama-3.3-70b-versatile");
+    expect(groqModel()).toBe("qwen/qwen3.8-27b");
   });
 });

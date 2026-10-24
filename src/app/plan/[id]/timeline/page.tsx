@@ -392,25 +392,29 @@ export default function PlanTimelinePage({ params }: TimelinePageProps) {
         </div>
       )}
 
-      {/* Timeline List / Cards */}
-      <div className="relative border-l-2 border-indigo-200 dark:border-indigo-900 ml-4 pl-6 space-y-6">
+      {/* Timeline Ordered List Alternative */}
+      <ol
+        role="list"
+        aria-label="Chronological milestones ordered list"
+        className="relative border-l-2 border-indigo-200 dark:border-indigo-900 ml-4 pl-6 space-y-6 list-none"
+      >
         {filteredMilestones.length === 0 ? (
-          <div className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+          <li className="p-8 text-center text-slate-500 dark:text-slate-400 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800 list-none">
             No milestones match your current filter.
-          </div>
+          </li>
         ) : (
           filteredMilestones.map((m) => {
             const isCompleted = m.status === "completed";
             const isInProgress = m.status === "in_progress";
 
             return (
-              <div
+              <li
                 key={m.id}
                 className={`relative group p-4 rounded-xl border transition-all ${
                   m.isCriticalPath
                     ? "border-amber-300 dark:border-amber-800/80 bg-linear-to-r from-amber-50/40 to-white dark:from-amber-950/20 dark:to-slate-900"
                     : "border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900"
-                } shadow-xs hover:shadow-md`}
+                } shadow-xs hover:shadow-md list-none`}
               >
                 {/* Timeline Node Dot */}
                 <span
@@ -524,11 +528,11 @@ export default function PlanTimelinePage({ params }: TimelinePageProps) {
                     </button>
                   </div>
                 </div>
-              </div>
+              </li>
             );
           })
         )}
-      </div>
+      </ol>
     </div>
   );
 }

@@ -22,7 +22,7 @@ All test suites and test counts below are directly generated and verified from t
 | 9 | **Environment Validator** | `src/__tests__/unit/env.test.ts` | 8 | Required vs optional env vars, whitespace and quote stripping, build commit injection |
 | 10 | **Gemini Provider Adapter** | `src/__tests__/unit/gemini.test.ts` | 10 | Structured JSON, streaming parse, 400 invalid key, 429 quota, 503 retry, timeout, secret key redaction |
 | 11 | **RFC 4180 CSV Engine** | `src/__tests__/unit/csv.test.ts` | 5 | Quoting, escaping, formula injection neutralization (`=`, `+`, `-`, `@`, `\t` prefixed with `'`) |
-| 12 | **Concurrency Stress Test** | `src/__tests__/integration/concurrency.test.ts` | 2 | Phase 6 verification: 50 concurrent identical requests coalesce; 50 concurrent distinct requests run safely |
+| 12 | **Concurrency Stress Test** | `src/__tests__/integration/concurrency.test.ts` | 4 | 50 concurrent coalesced + 50 distinct requests, concurrency cap enforcement (peak in-flight ≤ 4), inFlight map drain to 0, LRU cache bounded to 50, and negative assertion proofs |
 | 13 | **RFC 5545 iCalendar Engine** | `src/__tests__/unit/ics.test.ts` | 4 | CRLF line terminators, 75-octet UTF-8 line folding, character escaping, `VALUE=DATE` formatting |
 | 14 | **State Patches Extended** | `src/__tests__/unit/patches-extended.test.ts` | 12 | Deep patch application, inversion, error handling on invalid patches, multi-patch sequences |
 | 15 | **Groq Provider Adapter** | `src/__tests__/unit/groq.test.ts` | 6 | Authorization Bearer header, JSON prompt verification, OpenAI SSE stream parsing, 401/429/5xx mapping |
@@ -41,7 +41,8 @@ All test suites and test counts below are directly generated and verified from t
 | 28 | **Health Verification Route** | `src/__tests__/unit/health.test.ts` | 4 | GET /api/health deploy verification, secret redaction, Upstash ping, rate limiting |
 | 29 | **AI Circuit Breaker** | `src/__tests__/unit/circuit-breaker.test.ts` | 4 | In-memory trip, check, expiry, reset, Redis distributed state sync and error tolerance |
 | 30 | **AI Orchestrator** | `src/__tests__/unit/orchestrator.test.ts` | 7 | Primary provider success, quota error immediate failover, backoff retries, schema repair, coalescing |
-| **Total** | **30 Suites** | | **223** | **All 223 Tests Passing (100% Pass Rate)** |
+| 31 | **Announce Accessibility Utility** | `src/__tests__/unit/announce.test.ts` | 2 | Accessible polite live-region announcements, timeout debounce, and missing DOM node fallback |
+| **Total** | **31 Suites** | | **227** | **All 227 Tests Passing (100% Pass Rate)** |
 
 ---
 
@@ -58,9 +59,8 @@ npm run test:coverage
 ```
 Coverage thresholds enforced & verified:
 - `src/domain/`: 94.72% lines (threshold: ≥85%) - **PASS**
-- `src/services/`: 93.49% lines (threshold: ≥85%) - **PASS**
-- `src/app/api/`: 89.02% lines (threshold: ≥85%) - **PASS**
-- Overall application: 89.02% lines (threshold: ≥70%) - **PASS**
+- `src/services/`: 93.84% lines (threshold: ≥85%) - **PASS**
+- Overall application: 89.41% lines (threshold: ≥70%) - **PASS**
 
 ### Run Full Gate Verification
 Runs ESLint 9, TypeScript compiler (`tsc --noEmit`), Jest test suite, and Next.js 16 production build:

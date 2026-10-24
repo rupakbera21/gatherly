@@ -212,7 +212,13 @@ export default function PlanBudgetPage({ params }: BudgetPageProps) {
             {formatCurrency(totalSpentMinor, currency)}
           </div>
           <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            {formatCurrency(remainingBudgetMinor, currency)} remaining
+            {remainingBudgetMinor < 0 ? (
+              <span className="text-red-600 dark:text-red-400 font-semibold">
+                ⚠️ Over Budget by {formatCurrency(Math.abs(remainingBudgetMinor), currency)}
+              </span>
+            ) : (
+              <span>{formatCurrency(remainingBudgetMinor, currency)} remaining</span>
+            )}
           </div>
         </div>
       </div>

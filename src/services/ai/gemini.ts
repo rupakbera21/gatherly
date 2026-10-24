@@ -50,7 +50,7 @@ export class GeminiProvider implements LLMProvider {
     opts: GenerationOptions = {}
   ): Promise<T> {
     const ai = this.getClient();
-    const model = process.env["GEMINI_MODEL"] || "gemini-2.5-flash";
+    const model = process.env["GEMINI_MODEL"] || "gemini-3.5-flash";
     const timeoutMs = opts.timeoutMs ?? 20_000;
 
     const controller = new AbortController();

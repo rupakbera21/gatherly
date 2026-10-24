@@ -38,12 +38,68 @@ export interface OrchestratorOptions {
   primaryProvider?: LLMProvider;
   fallbackProvider?: LLMProvider;
   enableCache?: boolean;
+  concurrencyCap?: number;
+}
+
+class ConcurrencyLimiter {
+  private active = 0;
+  private peak = 0;
+  private queue: (() => void)[] = [];
+
+  constructor(private cap: number) {}
+
+  get activeCount(): number {
+    return this.active;
+  }
+
+  get peakCount(): number {
+    return this.peak;
+  }
+
+  async acquire(): Promise<() => void> {
+    if (this.active < this.cap) {
+      this.active++;
+      if (this.active > this.peak) this.peak = this.active;
+      let released = false;
+      return () => {
+        if (!released) {
+          released = true;
+          this.active--;
+          const next = this.queue.shift();
+          if (next) {
+            this.active++;
+            if (this.active > this.peak) this.peak = this.active;
+            next();
+          }
+        }
+      };
+    }
+
+    return new Promise((resolve) => {
+      this.queue.push(() => {
+        let released = false;
+        resolve(() => {
+          if (!released) {
+            released = true;
+            this.active--;
+            const next = this.queue.shift();
+            if (next) {
+              this.active++;
+              if (this.active > this.peak) this.peak = this.active;
+              next();
+            }
+          }
+        });
+      });
+    });
+  }
 }
 
 export class AIOrchestrator {
   private primary: LLMProvider;
   private fallback: LLMProvider;
   private enableCache: boolean;
+  private limiter: ConcurrencyLimiter;
 
   // In-memory LRU cache: max 50 entries, 10-minute TTL
   private lruCache = new Map<string, CacheEntry<unknown>>();
@@ -57,6 +113,23 @@ export class AIOrchestrator {
     this.primary = options.primaryProvider || new GeminiProvider();
     this.fallback = options.fallbackProvider || new GroqProvider();
     this.enableCache = options.enableCache ?? true;
+    this.limiter = new ConcurrencyLimiter(options.concurrencyCap ?? 4);
+  }
+
+  getInFlightCount(): number {
+    return this.inFlight.size;
+  }
+
+  getCacheSize(): number {
+    return this.lruCache.size;
+  }
+
+  getActiveProviderCalls(): number {
+    return this.limiter.activeCount;
+  }
+
+  getPeakInFlight(): number {
+    return this.limiter.peakCount;
   }
 
   private getFromCache<T>(key: string): CacheEntry<T> | null {
@@ -165,12 +238,14 @@ export class AIOrchestrator {
     },
     startTime: number
   ): Promise<OrchestrationResult<T>> {
-    let lastError: Error | null = null;
-    let providerUsed: AIProviderName | null = null;
-    let resultData: T | null = null;
+    const release = await this.limiter.acquire();
+    try {
+      let lastError: Error | null = null;
+      let providerUsed: AIProviderName | null = null;
+      let resultData: T | null = null;
 
-    // STEP 1: Check Primary Provider Circuit Breaker
-    const isPrimaryOpen = await isCircuitOpen(this.primary.name);
+      // STEP 1: Check Primary Provider Circuit Breaker
+      const isPrimaryOpen = await isCircuitOpen(this.primary.name);
 
     if (!isPrimaryOpen) {
       try {
@@ -248,15 +323,18 @@ export class AIOrchestrator {
       }
     }
 
-    // STEP 3: Clean output strings
-    const cleaned = cleanStructuredStrings(resultData);
+      // STEP 3: Clean output strings
+      const cleaned = cleanStructuredStrings(resultData);
 
-    return {
-      data: cleaned,
-      provider: providerUsed || "gemini",
-      cached: false,
-      latencyMs: Date.now() - startTime,
-    };
+      return {
+        data: cleaned,
+        provider: providerUsed || "gemini",
+        cached: false,
+        latencyMs: Date.now() - startTime,
+      };
+    } finally {
+      release();
+    }
   }
 
   /**
