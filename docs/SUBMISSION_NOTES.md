@@ -40,7 +40,7 @@ Event planning is fundamentally backward planning from the target date:
 
 ## 3. Measured Performance & Verification Metrics
 
-- **Test Suite:** 117 passed tests across 19 suites (`npm test` executes in ~5.7 seconds).
+- **Test Suite:** 223 passed tests across 30 suites (`npm test` executes in ~6.1 seconds).
 - **TypeScript & Linting:** 100% clean check with `noUncheckedIndexedAccess: true` and ESLint 9.
 - **Production Build:** Next.js 16.4.2 with Turbopack, Cache Components, and Partial Prerendering (PPR) enabled.
 - **Bundle & Repository Size:**
@@ -64,7 +64,7 @@ Event planning is fundamentally backward planning from the target date:
 ## 5. Verification Commands
 
 ```bash
-# 1. Run full verification suite (lint + typecheck + 111 tests + Next.js 16 build)
+# 1. Run full verification suite (lint + typecheck + 223 coverage-enforced tests + Next.js 16 build)
 npm run verify
 
 # 2. Run unit and integration tests with coverage

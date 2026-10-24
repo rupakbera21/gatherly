@@ -124,6 +124,6 @@ describe("env validation", () => {
     const { groqModel } = jest.requireActual<typeof import("@/services/env")>(
       "@/services/env"
     );
-    expect(groqModel()).toBe("qwen/qwen3.8-27b");
+    expect(groqModel()).toBe("llama-3.3-70b-versatile");
   });
 });

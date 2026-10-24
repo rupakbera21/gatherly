@@ -3,11 +3,13 @@
  * @purpose Fallback AI provider adapter using plain fetch to GroqCloud OpenAI-compatible API.
  *          Implements LLMProvider interface with per-attempt timeout,
  *          response_format json_object, SSE stream parsing, Zod validation, and error classification.
+ *          Strips reasoning-model tags (<think>…</think>) before JSON.parse.
  * @rubric GenAI Architecture – Fallback provider adapter.
  */
 
 import { z } from "zod";
 import { logger } from "../logger";
+import { stripReasoningTags } from "./cleaner";
 import {
   AIErrorDetails,
   GenerationOptions,
@@ -42,7 +44,9 @@ export class GroqProvider implements LLMProvider {
       });
     }
 
-    const model = process.env["GROQ_MODEL"] || "qwen/qwen3.8-27b";
+    // Default: llama-3.3-70b-versatile — stable Groq-hosted non-reasoning instruct model.
+    // Override via GROQ_MODEL env var if needed.
+    const model = process.env["GROQ_MODEL"] || "llama-3.3-70b-versatile";
     const timeoutMs = opts.timeoutMs ?? 20_000;
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), timeoutMs);
@@ -142,9 +146,12 @@ export class GroqProvider implements LLMProvider {
         });
       }
 
+      // Strip reasoning tags BEFORE JSON.parse to handle models that emit <think>…</think>
+      const cleanedContent = stripReasoningTags(content);
+
       let parsedJson: unknown;
       try {
-        parsedJson = JSON.parse(content);
+        parsedJson = JSON.parse(cleanedContent);
       } catch (parseErr) {
         throw this.buildError({
           type: "schema",
@@ -204,7 +211,7 @@ export class GroqProvider implements LLMProvider {
       });
     }
 
-    const model = process.env["GROQ_MODEL"] || "qwen/qwen3.8-27b";
+    const model = process.env["GROQ_MODEL"] || "llama-3.3-70b-versatile";
     const controller = new AbortController();
     const timeoutMs = opts.timeoutMs ?? 30_000;
     const timer = setTimeout(() => controller.abort(), timeoutMs);

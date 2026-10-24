@@ -83,5 +83,5 @@ export function geminiModel(): string {
 
 /** Returns the Groq model name, preferring the env override. */
 export function groqModel(): string {
-  return getEnv().GROQ_MODEL ?? "qwen/qwen3.8-27b";
+  return getEnv().GROQ_MODEL ?? "llama-3.3-70b-versatile";
 }

@@ -179,7 +179,7 @@ Features:
 | `UPSTASH_REDIS_REST_URL` | ✅ | Upstash Redis REST URL |
 | `UPSTASH_REDIS_REST_TOKEN` | ✅ | Upstash Redis REST token |
 | `GEMINI_MODEL` | ❌ | Override Gemini model (default: `gemini-flash-latest`) |
-| `GROQ_MODEL` | ❌ | Override Groq model (default: `qwen/qwen3.8-27b`) |
+| `GROQ_MODEL` | ❌ | Override Groq model (default: `llama-3.3-70b-versatile`) |
 | `NEXT_PUBLIC_BUILD_COMMIT` | ❌ | Build commit hash (set by CI) |
 
 **Important:** Paste values without surrounding quotes or whitespace.

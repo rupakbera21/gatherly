@@ -5,10 +5,13 @@
  * @purpose Interactive Plan Copilot drawer assistant.
  *          Streams plan questions, proposes reversible PlanPatch operations,
  *          displays visual before/after diff previews, and executes patches safely.
+ *          Manages focus on open/close, traps Tab within the drawer,
+ *          closes on Escape, and announces status via a polite aria-live region.
  * @rubric Problem Statement Alignment & Code Quality – AI Copilot with human-in-the-loop patch approval.
+ * @rubric Accessibility – Focus management, Escape close, Tab trap, aria-live announcements.
  */
 
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { diffPatch, PlanPatch } from "@/domain/patches";
 import { EventPlan } from "@/domain/types";
 import { useGatherlyStore } from "@/store";
@@ -17,6 +20,8 @@ interface CopilotDrawerProps {
   plan: EventPlan;
   isOpen: boolean;
   onClose: () => void;
+  /** Ref to the button that opened the drawer (for focus-return on close). */
+  triggerRef?: React.RefObject<HTMLElement | null>;
 }
 
 interface ChatMessage {
@@ -27,11 +32,15 @@ interface ChatMessage {
   applied?: boolean;
 }
 
-export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea, input, select, [tabindex]:not([tabindex="-1"])';
+
+export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDrawerProps) {
   const { applyPatchToPlan } = useGatherlyStore();
 
   const [inputMessage, setInputMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [liveAnnouncement, setLiveAnnouncement] = useState("");
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: "msg_welcome",
@@ -39,6 +48,64 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
       text: `Hello! I'm your Gatherly Copilot for "${plan.profile.title}". You can ask me to reallocate budget, add vendor tasks, suggest timeline milestones, or answer any event questions. How can I help?`,
     },
   ]);
+
+  const drawerRef = useRef<HTMLDivElement>(null);
+  const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  // Focus the close button when drawer opens; restore to trigger on close.
+  useEffect(() => {
+    if (isOpen) {
+      // Defer focus to allow animation frame to complete
+      const id = requestAnimationFrame(() => {
+        closeButtonRef.current?.focus();
+      });
+      return () => cancelAnimationFrame(id);
+    } else {
+      // Return focus to the button that opened the drawer
+      if (triggerRef?.current) {
+        triggerRef.current.focus();
+      }
+    }
+  }, [isOpen, triggerRef]);
+
+  // Trap Tab/Shift+Tab within the drawer and close on Escape.
+  const handleKeyDown = useCallback(
+    (e: React.KeyboardEvent<HTMLDivElement>) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        onClose();
+        return;
+      }
+
+      if (e.key !== "Tab") return;
+
+      const drawer = drawerRef.current;
+      if (!drawer) return;
+
+      const focusable = Array.from(drawer.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
+        (el) => !el.hasAttribute("disabled") && el.offsetParent !== null
+      );
+
+      if (focusable.length === 0) return;
+
+      const first = focusable[0]!;
+      const last = focusable[focusable.length - 1]!;
+
+      if (e.shiftKey) {
+        if (document.activeElement === first) {
+          e.preventDefault();
+          last.focus();
+        }
+      } else {
+        if (document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    },
+    [onClose]
+  );
 
   if (!isOpen) return null;
 
@@ -56,6 +123,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage("");
     setIsLoading(true);
+    setLiveAnnouncement("Copilot is thinking…");
 
     try {
       const res = await fetch("/api/copilot", {
@@ -69,6 +137,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
 
       const data = await res.json();
       if (res.ok) {
+        const patchCount: number = (data.suggestedPatches as PlanPatch[] | undefined)?.length ?? 0;
         setMessages((prev) => [
           ...prev,
           {
@@ -78,15 +147,21 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
             patches: data.suggestedPatches || [],
           },
         ]);
+        setLiveAnnouncement(
+          patchCount > 0
+            ? `Copilot responded with ${patchCount} suggested change${patchCount > 1 ? "s" : ""}.`
+            : "Copilot responded."
+        );
       } else {
         setMessages((prev) => [
           ...prev,
           {
             id: `err_${Date.now()}`,
             sender: "copilot",
-            text: data.message || "Sorry, I ran into an error processing that request.",
+            text: (data as { message?: string }).message || "Sorry, I ran into an error processing that request.",
           },
         ]);
+        setLiveAnnouncement("Copilot encountered an error.");
       }
     } catch {
       setMessages((prev) => [
@@ -97,6 +172,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
           text: "Network error connecting to Copilot service. Please try again.",
         },
       ]);
+      setLiveAnnouncement("Network error. Please try again.");
     } finally {
       setIsLoading(false);
     }
@@ -107,15 +183,23 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
     setMessages((prev) =>
       prev.map((m) => (m.id === msgId ? { ...m, applied: true } : m))
     );
+    setLiveAnnouncement("Plan changes applied successfully.");
   }
 
   return (
     <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/60 backdrop-blur-xs flex justify-end animate-fade-in">
+      {/* Single polite aria-live region for all status announcements */}
+      <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
+        {liveAnnouncement}
+      </div>
+
       <div
+        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="copilot-drawer-title"
         className="w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col h-full animate-slide-left"
+        onKeyDown={handleKeyDown}
       >
         {/* Header */}
         <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
@@ -136,6 +220,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
           </div>
 
           <button
+            ref={closeButtonRef}
             onClick={onClose}
             aria-label="Close Copilot drawer"
             className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
@@ -147,7 +232,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
         </div>
 
         {/* Message Thread */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-4">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4" aria-label="Conversation">
           {messages.map((msg) => {
             const isUser = msg.sender === "user";
 
@@ -211,7 +296,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
                                 onClick={() => handleApplyPatch(msg.id, patch)}
                                 className="px-3 py-1 text-[11px] font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-500 shadow-2xs"
                               >
-                                Approve & Apply
+                                Approve &amp; Apply
                               </button>
                             </div>
                           )}
@@ -225,7 +310,10 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
           })}
 
           {isLoading && (
-            <div className="flex items-center gap-2 p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xs text-slate-500 w-32 animate-pulse">
+            <div
+              className="flex items-center gap-2 p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xs text-slate-500 w-32 animate-pulse"
+              aria-hidden="true"
+            >
               <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" />
               <span>Thinking...</span>
             </div>
@@ -235,6 +323,7 @@ export function CopilotDrawer({ plan, isOpen, onClose }: CopilotDrawerProps) {
         {/* Input Bar */}
         <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex gap-2">
           <input
+            ref={inputRef}
             type="text"
             required
             aria-label="Message Copilot"

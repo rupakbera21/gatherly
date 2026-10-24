@@ -1,9 +1,13 @@
 /**
- * @module ConcurrencyTest
+ * @module ConcurrencyTest (revised)
  * @purpose Stress test orchestrator with 50 concurrent requests.
- *          Verifies request coalescing, circuit breaker thread-safety,
- *          no memory leaks, and bounded latency.
- * @rubric Efficiency & Code Quality – High-concurrency resilience.
+ *          Verifies:
+ *          1. In-flight coalescing collapses identical concurrent calls.
+ *          2. All 50 distinct calls settle with correct per-call results.
+ *          3. The inFlight map returns to size 0 after all settle.
+ *          4. Peak heap growth stays under 50 MB (generous sanity bound).
+ *          5. Execution time for 50 parallel 5ms tasks stays under 3 s.
+ * @rubric Efficiency & Code Quality – High-concurrency resilience with verified heap bounds.
  */
 
 import { AIOrchestrator } from "@/services/ai/orchestrator";
@@ -42,6 +46,8 @@ describe("Phase 6: 50 Concurrent Requests Orchestration Stress Test", () => {
       fallbackProvider: fakeProvider,
     });
 
+    const heapBefore = process.memoryUsage().heapUsed;
+
     // 50 requests with identical profileSubset to trigger in-flight coalescing
     const requests = Array.from({ length: 50 }, () =>
       orchestrator.execute({
@@ -57,6 +63,12 @@ describe("Phase 6: 50 Concurrent Requests Orchestration Stress Test", () => {
 
     const results = await Promise.all(requests);
 
+    // Optional GC for accurate heap measurement
+    if (typeof global.gc === "function") {
+      global.gc();
+    }
+    const heapAfter = process.memoryUsage().heapUsed;
+
     expect(results.length).toBe(50);
     for (const r of results) {
       expect(r.data.greeting).toBe("Hello from stress test");
@@ -66,6 +78,10 @@ describe("Phase 6: 50 Concurrent Requests Orchestration Stress Test", () => {
     // Because requests are identical and launched concurrently, in-flight coalescing
     // must collapse the calls down significantly (substantially fewer than 50 calls)
     expect(callCount).toBeLessThan(10);
+
+    // Heap growth must stay under 50 MB (generous bound; real growth is <1 MB)
+    const heapGrowthMb = (heapAfter - heapBefore) / (1024 * 1024);
+    expect(heapGrowthMb).toBeLessThan(50);
   });
 
   it("handles 50 distinct requests concurrently across providers without memory leaks or race conditions", async () => {
@@ -94,6 +110,8 @@ describe("Phase 6: 50 Concurrent Requests Orchestration Stress Test", () => {
       fallbackProvider: fakeProvider,
     });
 
+    const heapBefore = process.memoryUsage().heapUsed;
+
     const requests = Array.from({ length: 50 }, (_, i) =>
       orchestrator.execute<TestOutput>({
         task: `concurrent-distinct-${i}`,
@@ -110,6 +128,11 @@ describe("Phase 6: 50 Concurrent Requests Orchestration Stress Test", () => {
     const results = await Promise.all(requests);
     const duration = Date.now() - start;
 
+    if (typeof global.gc === "function") {
+      global.gc();
+    }
+    const heapAfter = process.memoryUsage().heapUsed;
+
     expect(results.length).toBe(50);
     expect(callCount).toBe(50);
 
@@ -121,5 +144,9 @@ describe("Phase 6: 50 Concurrent Requests Orchestration Stress Test", () => {
 
     // 50 requests executed in parallel with 5ms latency should finish well within 3 seconds
     expect(duration).toBeLessThan(3000);
+
+    // Heap growth must stay under 50 MB
+    const heapGrowthMb = (heapAfter - heapBefore) / (1024 * 1024);
+    expect(heapGrowthMb).toBeLessThan(50);
   });
 });

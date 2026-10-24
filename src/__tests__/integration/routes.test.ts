@@ -11,11 +11,16 @@ import { POST as ideasRoute } from "../../app/api/ideas/route";
 import { POST as timelineRoute } from "../../app/api/timeline/route";
 import { POST as vendorsRoute } from "../../app/api/vendors/route";
 
+let mockRouteOrchestratorThrow = false;
+
 // Mock AI orchestrator
 jest.mock("../../services/ai/orchestrator", () => {
   return {
     AIOrchestrator: jest.fn().mockImplementation(() => ({
       execute: jest.fn().mockImplementation(async (params: { task: string }) => {
+        if (mockRouteOrchestratorThrow) {
+          throw new Error("AI Execution Failed");
+        }
         if (params.task === "propose-budget") {
           return {
             data: {
@@ -157,5 +162,96 @@ describe("Tier 1 API Endpoints Integration Tests", () => {
     const json = await res.json();
     expect(json.ideas).toHaveLength(2);
     expect(json.ideas[0].title).toBe("Interactive Food Station");
+  });
+
+  it("returns 422 on invalid profile for POST /api/budget", async () => {
+    const req = new NextRequest("http://localhost:3000/api/budget", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invalid: "data" }),
+    });
+    const res = await budgetRoute(req);
+    expect(res.status).toBe(422);
+  });
+
+  it("returns 422 on invalid profile for POST /api/timeline", async () => {
+    const req = new NextRequest("http://localhost:3000/api/timeline", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invalid: "data" }),
+    });
+    const res = await timelineRoute(req);
+    expect(res.status).toBe(422);
+  });
+
+  it("returns 422 on invalid profile for POST /api/vendors", async () => {
+    const req = new NextRequest("http://localhost:3000/api/vendors", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invalid: "data" }),
+    });
+    const res = await vendorsRoute(req);
+    expect(res.status).toBe(422);
+  });
+
+  it("returns 422 on invalid body for POST /api/ideas", async () => {
+    const req = new NextRequest("http://localhost:3000/api/ideas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ invalid: "data" }),
+    });
+    const res = await ideasRoute(req);
+    expect(res.status).toBe(422);
+  });
+
+  it("falls back to deterministic baseline for all Tier 1 routes when AI fails", async () => {
+    mockRouteOrchestratorThrow = true;
+    try {
+      // Budget fallback
+      const reqBudget = new NextRequest("http://localhost:3000/api/budget", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sampleProfile),
+      });
+      const resBudget = await budgetRoute(reqBudget);
+      expect(resBudget.status).toBe(200);
+      const jsonBudget = await resBudget.json();
+      expect(jsonBudget.categories.length).toBeGreaterThan(0);
+
+      // Timeline fallback
+      const reqTimeline = new NextRequest("http://localhost:3000/api/timeline", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sampleProfile),
+      });
+      const resTimeline = await timelineRoute(reqTimeline);
+      expect(resTimeline.status).toBe(200);
+      const jsonTimeline = await resTimeline.json();
+      expect(jsonTimeline.milestones.length).toBeGreaterThan(0);
+
+      // Vendors fallback
+      const reqVendors = new NextRequest("http://localhost:3000/api/vendors", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(sampleProfile),
+      });
+      const resVendors = await vendorsRoute(reqVendors);
+      expect(resVendors.status).toBe(200);
+      const jsonVendors = await resVendors.json();
+      expect(jsonVendors.vendors.length).toBeGreaterThan(0);
+
+      // Ideas has no deterministic baseline (Section 5.4) -> returns honest 502 retryable error
+      const reqIdeas = new NextRequest("http://localhost:3000/api/ideas", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ profile: sampleProfile, existingTitles: [] }),
+      });
+      const resIdeas = await ideasRoute(reqIdeas);
+      expect(resIdeas.status).toBe(502);
+      const jsonIdeas = await resIdeas.json();
+      expect(jsonIdeas.code).toBe("PROVIDER_ERROR");
+    } finally {
+      mockRouteOrchestratorThrow = false;
+    }
   });
 });
