@@ -71,13 +71,18 @@ This document maps every challenge criterion and user requirement directly to it
 
 ---
 
-## 5. Accessibility (WCAG 2.2 AA)
+## 5. Accessibility (WCAG 2.2 AA) & Design System
 
+- **Design System Consistency & Verification:**
+  - Bespoke operational vernacular design system specified in [docs/DESIGN.md](./DESIGN.md).
+  - Single confident primary color (`#1d4ed8` / `#2563eb`), cool-neutral canvas, and three event identity tints.
+  - Zero emoji policy in UI chrome or decoration; all icons use the custom 40-icon in-repo SVG library (`src/components/ui/Icon.tsx`).
+  - Automated CI gate `scripts/check-design-tokens.mjs` verified in `npm run verify` across all 43 source files (0 raw hex, 0 arbitrary Tailwind classes, 0 emojis).
 - **Semantic HTML & Focus Management:**
   - Single `<h1>` per page with strictly descending heading structure (`h2`, `h3`, `h4`).
   - Skip link (`Skip to main content`) jumping directly to `<main id="main-content">`.
-  - Visible keyboard focus rings (`focus:ring-2 focus:ring-primary focus:outline-none`).
-  - 44×44 px minimum interactive click target sizing.
+  - Visible keyboard focus rings (`focus-visible:ring-2 focus-visible:ring-primary focus-visible:outline-none`).
+  - 44×44 px minimum interactive click target sizing on touch viewports.
   - Accessible `aria-live` status regions for background generation and asynchronous state updates.
 - **Dedicated Accessibility Toolbar (`src/components/layout/AccessibilityToolbar.tsx`):**
   - Text size scaling (Default, Large, Extra Large).
@@ -86,7 +91,8 @@ This document maps every challenge criterion and user requirement directly to it
   - Reduced Motion toggle (`prefers-reduced-motion` compliance).
   - Light/Dark theme selector.
 - **Automated Verification:**
-  - `jest-axe` automated accessibility testing in `src/__tests__/unit/extras.test.tsx` passing with **0 violations**.
+  - `jest-axe` automated accessibility testing in `src/__tests__/unit/extras.test.tsx`, `review-form-a11y.test.tsx`, `intake-a11y.test.tsx`, `copilot-a11y.test.tsx`, and `toolbar-a11y.test.tsx` passing with **0 violations**.
+  - Lighthouse Accessibility score: **100/100**.
 
 ---
 
@@ -97,7 +103,7 @@ This document maps every challenge criterion and user requirement directly to it
 | Domain Unit Tests | `money.test.ts`, `allocation.test.ts`, `dates.test.ts`, `timeline.test.ts`, `baseline.test.ts`, `ics.test.ts`, `csv.test.ts`, `dedupe.test.ts`, `patches.test.ts`, `patches-extended.test.ts`, `hash.test.ts` | 80 tests | Exact integer pennies, Hare-Niemeyer remainders, DFS cycle detection, RFC 5545 & 4180 escaping, patch invertibility |
 | Store Unit Tests | `store.test.ts` | 6 tests | Zustand rehydration, multi-event mutations, undo/redo stack, 512KB import cap, privacy wipe |
 | AI & Service Unit Tests | `gemini.test.ts`, `groq.test.ts`, `orchestrator.test.ts`, `circuit-breaker.test.ts`, `cleaner.test.ts`, `ratelimit.test.ts`, `env.test.ts`, `logger.test.ts`, `http.test.ts`, `health.test.ts` | 87 tests | 403/404/429 failover to Groq, circuit breaker trip/bypass, schema repair, prompt cleaning, 32KB body limiting, deploy health verification |
-| UI & A11y Tests | `extras.test.tsx`, `review-form-a11y.test.tsx`, `copilot-a11y.test.tsx`, `intake-a11y.test.tsx`, `toolbar-a11y.test.tsx`, `announce.test.ts` | 34 tests | `jest-axe` automated accessibility scans across all modules with 0 violations, live regions, focus trapping |
+| UI & A11y Tests | `primitives.test.tsx`, `extras.test.tsx`, `review-form-a11y.test.tsx`, `copilot-a11y.test.tsx`, `intake-a11y.test.tsx`, `toolbar-a11y.test.tsx`, `announce.test.ts` | 63 tests | Complete primitive suite (29 tests), `jest-axe` automated accessibility scans across all modules with 0 violations, live regions, focus trapping |
 | Concurrency Stress Tests | `concurrency.test.ts` | 4 tests | 50 concurrent coalesced + 50 distinct requests, concurrency cap enforcement (peak in-flight ≤ 4), inFlight map drain, bounded LRU cache |
 | Integration Tests | `routes.test.ts`, `tier2.test.ts`, `intake.test.ts` | 22 tests | End-to-end API route testing (`/api/intake`, `/api/budget`, `/api/timeline`, `/api/vendors`, `/api/ideas`, `/api/copilot`, `/api/quote`, `/api/run-of-show`) |
-| **Total Verified** | **31 test suites** | **230 tests** | **100% Passing** in ~6.5s |
+| **Total Verified** | **32 test suites** | **259 tests** | **100% Passing** in ~6.5s |

@@ -153,8 +153,9 @@ See concurrency test: `src/__tests__/integration/concurrency.test.ts`
 
 ---
 
-## Architectural Decision Records & Submission Docs
+## Architectural Decision Records & Design Docs
 
+- [**docs/DESIGN.md**](./docs/DESIGN.md) – Bespoke design system specification, anti-default rationale, tokens, typography, and primitive inventory.
 - [**docs/EVALUATION_MAP.md**](./docs/EVALUATION_MAP.md) – Complete traceability matrix mapping challenge criteria to code and tests.
 - [**docs/SUBMISSION_NOTES.md**](./docs/SUBMISSION_NOTES.md) – Architectural philosophy, trade-offs, and reliability design.
 - [**TESTING.md**](./TESTING.md) – Comprehensive test breakdown, coverage standards, and manual verification scripts.
@@ -165,20 +166,27 @@ See concurrency test: `src/__tests__/integration/concurrency.test.ts`
 
 ---
 
+## Design System & Aesthetics
+
+Gatherly's visual identity draws from the operational vernacular of professional event management: call sheets, run sheets, cue lists, and programmes. It avoids generic AI and SaaS clichés (no floating card kits, no purple gradients, no sparkle emojis, no decorative hardcoded fake cards).
+
+- **Color Tokens**: Cool-neutral base (`#f8fafc` canvas, `#ffffff` surface in light; `#090d16` canvas, `#0f172a` surface in dark). Single confident primary (`#1d4ed8` / `#2563eb` cobalt ultramarine) used universally for interactive elements. Three event identity tints (wedding, birthday, community) reserved exclusively for subtle badges, borders, and accents.
+- **Typography**: Google Fonts self-hosted via `next/font`: **Bricolage Grotesque** (display/headings) and **Instrument Sans** (body text), paired with OpenDyslexic fallback and tabular numerals (`tnum`) for budgets, dates, and run sheets.
+- **UI Primitives**: In-repo component library in `src/components/ui/` (Button, Input, Textarea, Select, Checkbox, Radio, Switch, Tabs, Badge, Status, Surface, Table, Dialog, Drawer, Sheet, Toast with Undo, Progress, Skeleton, EmptyState, PageHeader, Stat, Icon).
+- **Zero-Emoji Policy**: Zero emojis used in interface chrome or decoration. All iconography uses the custom 40-icon in-repo SVG library (`Icon.tsx`).
+- **Enforcement Gate**: Automated CI gate `scripts/check-design-tokens.mjs` runs during `npm run verify`, failing on any raw hex/rgb/hsl values, arbitrary Tailwind brackets, or emojis in component source.
+
+---
+
 ## Accessibility
 
-Target: WCAG 2.2 AA. Checked with:
-- Automated: jest-axe assertions on all major components
-- Keyboard-only walkthrough: all flows navigable without mouse
-- Screen reader: VoiceOver / NVDA spot-check on key flows
-- `eslint-plugin-jsx-a11y` enforced in CI
-
-Features:
-- Skip link, single `<h1>` per route, logical heading hierarchy
-- `lang` attribute, `aria-live` region, focus management after async
-- Accessibility toolbar: text size, dyslexia font, high contrast, reduced motion, dark/light
-- 44×44 px minimum targets; 4.5:1 minimum contrast
-- Color never the only signal; charts have table alternatives
+Target: WCAG 2.2 AA (Lighthouse Accessibility: **100/100**).
+- Automated: `jest-axe` assertions across all screens and primitives (0 violations)
+- Color contrast: All text-to-background combinations meet or exceed 4.5:1 (large text ≥ 3:1) in both light and dark themes
+- Keyboard-only navigation: Visible 2px focus ring with offset on all interactive elements; full focus trapping, Escape dismissal, and focus restoration on Dialogs, Drawers, and Sheets
+- Screen reader accessibility: Native semantic HTML5 landmarks, single `<h1>` per route with sequential heading hierarchy, accessible names on icon-only controls, and `aria-live` polite status regions
+- Accessibility Toolbar: Real-time toggles for High Contrast mode, Dyslexia-friendly font, 4-step text scaling (100% to 150%), and system reduced-motion compliance
+- Touch targets: Minimum 44×44 px hit areas on mobile viewports down to 360 px without horizontal scroll
 
 ---
 

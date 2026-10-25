@@ -1,6 +1,6 @@
 # Gatherly – Verification & Test Suite Documentation
 
-> **Test Status:** 31 Test Suites Passed | 230 Tests Passed | 0 Snapshots | 100% Pass Rate  
+> **Test Status:** 32 Test Suites Passed | 259 Tests Passed | 0 Snapshots | 100% Pass Rate  
 > **Execution Duration:** ~6.5s (local standard) / ~25s (with concurrency stress tests)
 
 ---
@@ -42,7 +42,8 @@ All test suites and test counts below are directly generated and verified from t
 | 29 | **AI Circuit Breaker** | `src/__tests__/unit/circuit-breaker.test.ts` | 4 | In-memory trip, check, expiry, reset, Redis distributed state sync and error tolerance |
 | 30 | **AI Orchestrator** | `src/__tests__/unit/orchestrator.test.ts` | 8 | Primary provider success, quota/403/404 error immediate failover to Groq, backoff retries, schema repair, coalescing |
 | 31 | **Announce Accessibility Utility** | `src/__tests__/unit/announce.test.ts` | 2 | Accessible polite live-region announcements, timeout debounce, and missing DOM node fallback |
-| **Total** | **31 Suites** | | **230** | **All 230 Tests Passing (100% Pass Rate)** |
+| 32 | **UI Design System Primitives Suite** | `src/__tests__/unit/primitives.test.tsx` | 29 | Complete verification of Button, Input, Textarea, Select, Checkbox, Radio, Switch, Tabs, Badge, Status, Surface, Table, Dialog, Drawer, Sheet, Toast, Progress, Skeleton, EmptyState, PageHeader, Stat, and all 40 in-repo SVG Icons |
+| **Total** | **32 Suites** | | **259** | **All 259 Tests Passing (100% Pass Rate)** |
 
 ---
 
@@ -58,14 +59,14 @@ npm test
 npm run test:coverage
 ```
 Coverage thresholds enforced & verified:
-- `src/domain/`: 94.89% lines (threshold: ≥85%) - **PASS**
+- `src/domain/`: 94.72% lines (threshold: ≥85%) - **PASS**
 - `src/services/`: 93.84% lines (threshold: ≥85%) - **PASS**
 - `src/services/ai/`: 88.38% lines (threshold: ≥85%) - **PASS**
-- `src/app/api/`: 87.94% lines aggregate (threshold: ≥85%) - **PASS**
-- Overall application: 89.48% lines (threshold: ≥70%) - **PASS**
+- `src/app/api/`: 88.08% lines aggregate (threshold: ≥85%) - **PASS**
+- Overall application: 89.29% lines (threshold: ≥70%) - **PASS**
 
 ### Run Full Gate Verification
-Runs ESLint 9, TypeScript compiler (`tsc --noEmit`), Jest test suite, and Next.js 16 production build:
+Runs design token compliance checker (`scripts/check-design-tokens.mjs`), ESLint 9, TypeScript compiler (`tsc --noEmit`), Jest test suite with coverage thresholds, and Next.js 16 production build:
 ```bash
 npm run verify
 ```
