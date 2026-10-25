@@ -35,7 +35,7 @@ const nextConfig: NextConfig = {
           },
           // CSP:
           // - default-src 'self': baseline deny-all
-          // - script-src 'self' 'unsafe-inline': Next.js needs inline scripts
+          // - script-src 'self' 'unsafe-inline' ('unsafe-eval' in dev for React debug/callstacks): Next.js needs inline scripts
           //   Relaxation: 'unsafe-inline' needed for Next.js hydration chunks.
           //   Mitigation: all AI calls are server-side; no third-party scripts.
           // - style-src 'self' 'unsafe-inline': Tailwind inline styles
@@ -47,7 +47,7 @@ const nextConfig: NextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline'",
+              `script-src 'self' 'unsafe-inline'${process.env.NODE_ENV !== "production" ? " 'unsafe-eval'" : ""}`,
               "style-src 'self' 'unsafe-inline'",
               "connect-src 'self'",
               "img-src 'self' data:",
