@@ -13,10 +13,22 @@ import { exportBudgetCsv } from "@/domain/csv";
 import { formatCurrency, fromMinorUnits, toMinorUnits } from "@/domain/money";
 import { BudgetCategory } from "@/domain/types";
 import { useGatherlyStore } from "@/store";
+import { Button, Icon, Badge, Surface, Input } from "@/components/ui";
 
 interface BudgetPageProps {
   params: Promise<{ id: string }>;
 }
+
+const PALETTE = [
+  "var(--color-primary-600)",
+  "var(--color-wedding-tint)",
+  "var(--color-birthday-tint)",
+  "var(--color-community-tint)",
+  "var(--color-success)",
+  "var(--color-warning)",
+  "var(--color-neutral-500)",
+  "var(--color-primary-400)",
+];
 
 export default function PlanBudgetPage({ params }: BudgetPageProps) {
   const resolvedParams = use(params);
@@ -124,195 +136,217 @@ export default function PlanBudgetPage({ params }: BudgetPageProps) {
     };
   });
 
-  const colors = [
-    "#f59e0b", "#3b82f6", "#10b981", "#8b5cf6", "#ec4899",
-    "#06b6d4", "#f97316", "#14b8a6", "#6366f1", "#84cc16",
-  ];
-
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Top Header & Actions */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-stone-900 dark:text-stone-100">
+          <h2 className="text-xl sm:text-2xl font-bold text-neutral-900 dark:text-neutral-100 font-display">
             Budget Planner & Allocation
           </h2>
-          <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1">
             Exact integer minor-unit math. Test adjustments in the what-if sandbox without calling AI.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <button
+          <Button
+            variant={sandboxMode ? "primary" : "secondary"}
+            size="sm"
+            icon={sandboxMode ? "check" : "sliders"}
             onClick={() => setSandboxMode(!sandboxMode)}
-            className={`px-3.5 py-2 text-xs font-semibold rounded-lg border transition-colors min-h-[44px] ${
-              sandboxMode
-                ? "bg-amber-600 text-white border-amber-600"
-                : "border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300"
-            }`}
           >
-            {sandboxMode ? "✓ Sandbox Active" : "🎮 What-If Sandbox"}
-          </button>
+            {sandboxMode ? "Sandbox Active" : "What-If Sandbox"}
+          </Button>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="download"
             onClick={handleExportCsv}
             disabled={categories.length === 0}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 transition-colors min-h-[44px] disabled:opacity-40"
           >
             Export CSV
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="primary"
+            size="sm"
+            icon="sparkles"
             onClick={handleRegenerateBudget}
+            isLoading={isRegenerating}
             disabled={isRegenerating}
-            className="px-4 py-2 text-xs font-semibold rounded-lg bg-amber-600 hover:bg-amber-700 text-white shadow-sm transition-colors min-h-[44px] disabled:opacity-50"
           >
             {isRegenerating ? "Regenerating..." : "Regenerate AI Allocation"}
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase">
+        <Surface className="p-5">
+          <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
             Total Budget
           </span>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">
+          <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mt-1 tnum">
             {formatCurrency(totalBudgetMinor, currency)}
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 tnum">
             {categories.length} categories planned
           </div>
-        </div>
+        </Surface>
 
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase">
+        <Surface className="p-5">
+          <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
             Total Allocated
           </span>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">
+          <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mt-1 tnum">
             {formatCurrency(totalAllocatedMinor, currency)}
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
             {totalAllocatedMinor === totalBudgetMinor ? (
-              <span className="text-emerald-600 dark:text-emerald-400 font-medium">✓ 100% Allocated</span>
+              <span className="text-success font-medium inline-flex items-center gap-1">
+                <Icon name="check" size="xs" aria-hidden="true" />
+                <span>100% Allocated</span>
+              </span>
             ) : totalAllocatedMinor > totalBudgetMinor ? (
-              <span className="text-red-600 font-medium">Over-allocated by {formatCurrency(totalAllocatedMinor - totalBudgetMinor, currency)}</span>
-            ) : (
-              <span className="text-amber-600 font-medium">{formatCurrency(totalBudgetMinor - totalAllocatedMinor, currency)} unallocated</span>
-            )}
-          </div>
-        </div>
-
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <span className="text-xs font-semibold text-stone-500 dark:text-stone-400 uppercase">
-            Total Spent / Remaining
-          </span>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100 mt-1">
-            {formatCurrency(totalSpentMinor, currency)}
-          </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            {remainingBudgetMinor < 0 ? (
-              <span className="text-red-600 dark:text-red-400 font-semibold">
-                ⚠️ Over Budget by {formatCurrency(Math.abs(remainingBudgetMinor), currency)}
+              <span className="text-danger font-medium inline-flex items-center gap-1">
+                <Icon name="alert-triangle" size="xs" aria-hidden="true" />
+                <span>Over-allocated by {formatCurrency(totalAllocatedMinor - totalBudgetMinor, currency)}</span>
               </span>
             ) : (
-              <span>{formatCurrency(remainingBudgetMinor, currency)} remaining</span>
+              <span className="text-warning font-medium">
+                {formatCurrency(totalBudgetMinor - totalAllocatedMinor, currency)} unallocated
+              </span>
             )}
           </div>
-        </div>
+        </Surface>
+
+        <Surface className="p-5">
+          <span className="text-xs font-semibold text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">
+            Total Spent / Remaining
+          </span>
+          <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 mt-1 tnum">
+            {formatCurrency(totalSpentMinor, currency)}
+          </div>
+          <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            {remainingBudgetMinor < 0 ? (
+              <span className="text-danger font-semibold inline-flex items-center gap-1">
+                <Icon name="alert-triangle" size="xs" aria-hidden="true" />
+                <span>Over Budget by {formatCurrency(Math.abs(remainingBudgetMinor), currency)}</span>
+              </span>
+            ) : (
+              <span className="tnum">{formatCurrency(remainingBudgetMinor, currency)} remaining</span>
+            )}
+          </div>
+        </Surface>
       </div>
 
       {/* Visual Budget Distribution (Accessible SVG Bar Chart) */}
       {categories.length > 0 && (
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm">
-          <h3 className="text-sm font-bold text-stone-900 dark:text-stone-100 mb-3">
+        <Surface className="p-6 space-y-4">
+          <h3 className="text-sm font-bold text-neutral-900 dark:text-neutral-100 font-display">
             Allocation Distribution
           </h3>
 
           <div
-            className="w-full h-8 rounded-lg overflow-hidden flex bg-stone-100 dark:bg-stone-800"
             role="img"
-            aria-label="Category allocation distribution bar chart"
+            aria-label={`Budget allocation stacked chart across ${categories.length} categories`}
+            className="w-full h-8 bg-neutral-100 dark:bg-neutral-800 rounded-md overflow-hidden flex"
           >
-            {categorySegments.map((cat, idx) => (
-              <div
-                key={cat.id}
-                style={{
-                  width: `${cat.percent}%`,
-                  backgroundColor: colors[idx % colors.length],
-                }}
-                title={`${cat.name}: ${cat.percent}% (${formatCurrency(cat.allocatedMinor, currency)})`}
-                className="h-full transition-all relative group"
-              />
-            ))}
+            {categorySegments.map((cat, idx) => {
+              if (cat.percent <= 0) return null;
+              const color = PALETTE[idx % PALETTE.length];
+              return (
+                <div
+                  key={cat.id}
+                  style={{
+                    width: `${cat.percent}%`,
+                    backgroundColor: color,
+                  }}
+                  className="h-full transition-all relative group"
+                  title={`${cat.name}: ${cat.percent}% (${formatCurrency(cat.allocatedMinor, currency)})`}
+                />
+              );
+            })}
           </div>
 
           {/* Legend */}
-          <div className="flex flex-wrap gap-x-4 gap-y-2 mt-4 text-xs">
+          <div className="flex flex-wrap items-center gap-x-4 gap-y-2 pt-2">
             {categorySegments.map((cat, idx) => (
-              <div key={cat.id} className="flex items-center gap-1.5">
+              <div key={cat.id} className="flex items-center gap-1.5 text-xs">
                 <span
-                  className="w-2.5 h-2.5 rounded-full"
-                  style={{ backgroundColor: colors[idx % colors.length] }}
-                  aria-hidden="true"
+                  className="w-2.5 h-2.5 rounded-xs shrink-0"
+                  style={{ backgroundColor: PALETTE[idx % PALETTE.length] }}
                 />
-                <span className="text-stone-700 dark:text-stone-300 font-medium">
-                  {cat.name} ({cat.percent}%)
+                <span className="font-medium text-neutral-700 dark:text-neutral-300">
+                  {cat.name}
+                </span>
+                <span className="text-neutral-500 dark:text-neutral-400 font-mono tnum">
+                  {cat.percent}%
                 </span>
               </div>
             ))}
           </div>
-        </div>
+        </Surface>
       )}
 
-      {/* Categories Table / Sandbox Editor */}
-      <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-bold text-stone-900 dark:text-stone-100">
-            Category Breakdown {sandboxMode && "(Sandbox Live Editing)"}
-          </h3>
+      {/* Categories Table & Inline Editor */}
+      <Surface className="p-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 mb-4 border-b border-neutral-100 dark:border-neutral-800">
+          <div>
+            <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+              Budget Line Items
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400">
+              {sandboxMode
+                ? "Sandbox Mode enabled: Modify amounts directly to preview allocation impacts instantly."
+                : "Exact allocation and actual spend per event domain."}
+            </p>
+          </div>
         </div>
 
         {categories.length === 0 ? (
-          <p className="text-sm text-stone-500 dark:text-stone-400 py-6 text-center italic">
-            No budget categories yet. Click &quot;Regenerate AI Allocation&quot; above or add one manually below.
-          </p>
+          <div className="text-center py-12 text-xs text-neutral-500 dark:text-neutral-400">
+            No budget categories created yet. Click &quot;Regenerate AI Allocation&quot; above or add one below.
+          </div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm" aria-label="Budget categories table">
+            <table className="w-full text-left text-xs" aria-label="Budget categories table">
               <thead>
-                <tr className="border-b border-stone-200 dark:border-stone-800 text-xs text-stone-500 uppercase tracking-wider">
-                  <th scope="col" className="py-3 px-2 font-semibold">Category</th>
-                  <th scope="col" className="py-3 px-2 font-semibold">Allocated ({currency})</th>
-                  <th scope="col" className="py-3 px-2 font-semibold">Spent ({currency})</th>
-                  <th scope="col" className="py-3 px-2 font-semibold">Remaining</th>
-                  <th scope="col" className="py-3 px-2 font-semibold text-right">Actions</th>
+                <tr className="border-b border-neutral-200 dark:border-neutral-800 text-neutral-500 dark:text-neutral-400 font-semibold uppercase tracking-wider">
+                  <th scope="col" className="py-2.5 px-3">Category</th>
+                  <th scope="col" className="py-2.5 px-3">Allocated</th>
+                  <th scope="col" className="py-2.5 px-3">Spent</th>
+                  <th scope="col" className="py-2.5 px-3">Variance</th>
+                  <th scope="col" className="py-2.5 px-3 text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-stone-100 dark:divide-stone-800">
+              <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
                 {categories.map((cat) => {
                   const allocatedMajor = fromMinorUnits(cat.allocatedMinor, currency);
                   const spentMajor = fromMinorUnits(cat.spentMinor, currency);
                   const remainingMinor = cat.allocatedMinor - cat.spentMinor;
 
                   return (
-                    <tr key={cat.id} className="hover:bg-stone-50 dark:hover:bg-stone-800/50">
-                      <td className="py-3 px-2 font-medium text-stone-900 dark:text-stone-100">
-                        {cat.name}
-                        {cat.isContingency && (
-                          <span className="ml-2 text-[10px] px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 dark:bg-amber-950 dark:text-amber-300 uppercase font-bold">
-                            Contingency
-                          </span>
-                        )}
+                    <tr key={cat.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/40 transition-colors">
+                      <td className="py-3 px-3 font-medium text-neutral-900 dark:text-neutral-100">
+                        <div className="flex items-center gap-2">
+                          <span>{cat.name}</span>
+                          {cat.isContingency && (
+                            <Badge variant="warning" size="sm">
+                              Contingency
+                            </Badge>
+                          )}
+                        </div>
                         {cat.notes && (
-                          <span className="block text-xs text-stone-500 dark:text-stone-400 mt-0.5">
+                          <span className="block text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
                             {cat.notes}
                           </span>
                         )}
                       </td>
 
-                      <td className="py-3 px-2 text-stone-700 dark:text-stone-300">
+                      <td className="py-3 px-3 text-neutral-700 dark:text-neutral-300 font-mono tnum">
                         {sandboxMode ? (
                           <input
                             type="number"
@@ -327,14 +361,14 @@ export default function PlanBudgetPage({ params }: BudgetPageProps) {
                               )
                             }
                             aria-label={`Allocated budget for ${cat.name}`}
-                            className="w-28 text-sm px-2 py-1 rounded border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                            className="w-28 text-xs px-2 py-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                           />
                         ) : (
                           formatCurrency(cat.allocatedMinor, currency)
                         )}
                       </td>
 
-                      <td className="py-3 px-2 text-stone-700 dark:text-stone-300">
+                      <td className="py-3 px-3 text-neutral-700 dark:text-neutral-300 font-mono tnum">
                         {sandboxMode ? (
                           <input
                             type="number"
@@ -349,33 +383,35 @@ export default function PlanBudgetPage({ params }: BudgetPageProps) {
                               )
                             }
                             aria-label={`Spent amount for ${cat.name}`}
-                            className="w-28 text-sm px-2 py-1 rounded border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                            className="w-28 text-xs px-2 py-1 rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100"
                           />
                         ) : (
                           formatCurrency(cat.spentMinor, currency)
                         )}
                       </td>
 
-                      <td className="py-3 px-2">
+                      <td className="py-3 px-3 font-mono tnum">
                         <span
                           className={`font-medium ${
                             remainingMinor < 0
-                              ? "text-red-600 dark:text-red-400"
-                              : "text-stone-700 dark:text-stone-300"
+                              ? "text-danger"
+                              : "text-neutral-700 dark:text-neutral-300"
                           }`}
                         >
                           {formatCurrency(remainingMinor, currency)}
                         </span>
                       </td>
 
-                      <td className="py-3 px-2 text-right">
-                        <button
+                      <td className="py-3 px-3 text-right">
+                        <Button
+                          variant="ghost"
+                          size="sm"
                           onClick={() => handleRemoveCategory(cat.id)}
-                          className="text-xs text-red-600 hover:text-red-700 hover:underline p-1.5"
+                          className="text-danger hover:text-danger hover:bg-danger-surface"
                           title={`Delete ${cat.name}`}
                         >
                           Remove
-                        </button>
+                        </Button>
                       </td>
                     </tr>
                   );
@@ -386,33 +422,37 @@ export default function PlanBudgetPage({ params }: BudgetPageProps) {
         )}
 
         {/* Add Manual Category Form */}
-        <form onSubmit={handleAddCategory} className="mt-6 pt-4 border-t border-stone-200 dark:border-stone-800 flex flex-wrap items-center gap-3">
-          <input
-            type="text"
-            placeholder="New Category Name (e.g. DJ & Lighting)"
-            value={newCatName}
-            onChange={(e) => setNewCatName(e.target.value)}
-            className="flex-1 min-w-[200px] text-sm px-3.5 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 min-h-[44px]"
-            required
-            aria-label="New category name"
-          />
-          <input
-            type="number"
-            min="0"
-            placeholder={`Amount (${currency})`}
-            value={newCatAmount}
-            onChange={(e) => setNewCatAmount(e.target.value)}
-            className="w-36 text-sm px-3.5 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 min-h-[44px]"
-            aria-label="New category amount"
-          />
-          <button
+        <form onSubmit={handleAddCategory} className="mt-6 pt-4 border-t border-neutral-200 dark:border-neutral-800 flex flex-wrap items-center gap-3">
+          <div className="flex-1 min-w-52">
+            <Input
+              type="text"
+              placeholder="New Category Name (e.g. DJ & Lighting)"
+              value={newCatName}
+              onChange={(e) => setNewCatName(e.target.value)}
+              required
+              aria-label="New category name"
+            />
+          </div>
+          <div className="w-36">
+            <Input
+              type="number"
+              min="0"
+              placeholder={`Amount (${currency})`}
+              value={newCatAmount}
+              onChange={(e) => setNewCatAmount(e.target.value)}
+              aria-label="New category amount"
+            />
+          </div>
+          <Button
             type="submit"
-            className="px-4 py-2 text-sm font-semibold rounded-lg bg-stone-800 dark:bg-stone-200 text-white dark:text-stone-900 hover:bg-stone-700 transition-colors min-h-[44px]"
+            variant="secondary"
+            size="md"
+            icon="plus"
           >
-            + Add Category
-          </button>
+            Add Category
+          </Button>
         </form>
-      </div>
+      </Surface>
     </div>
   );
 }

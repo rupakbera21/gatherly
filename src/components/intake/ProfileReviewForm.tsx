@@ -10,6 +10,7 @@
 import React, { useState } from "react";
 import { fromMinorUnits, toMinorUnits } from "@/domain/money";
 import { EventProfile, EventType } from "@/domain/types";
+import { Button, Surface, Icon } from "@/components/ui";
 
 interface ProfileReviewFormProps {
   initialProfile: EventProfile;
@@ -66,15 +67,15 @@ export function ProfileReviewForm({
     <form
       onSubmit={handleSubmit}
       noValidate
-      className="max-w-2xl mx-auto bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-6 sm:p-8 shadow-sm space-y-6"
-      aria-label="Review and edit event profile"
+      className="max-w-2xl mx-auto p-6 bg-surface border border-border-subtle rounded-surface space-y-6 text-left"
+      aria-label="Review and edit event parameters"
     >
-      <div className="border-b border-stone-200 dark:border-stone-800 pb-4">
-        <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+      <div className="border-b border-border-subtle pb-4">
+        <h2 className="text-xl font-bold font-display text-primary">
           Review Your Event Profile
         </h2>
-        <p className="text-sm text-stone-600 dark:text-stone-400 mt-1">
-          Verify and adjust the details extracted from your description before generating your plan.
+        <p className="text-sm text-secondary mt-1">
+          Verify what Gatherly understood from your description. Edit any fields before plan generation.
         </p>
       </div>
 
@@ -82,9 +83,9 @@ export function ProfileReviewForm({
       <div>
         <label
           htmlFor="event-title"
-          className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+          className="block text-sm font-semibold text-primary mb-1"
         >
-          Event Title <span className="text-red-500">*</span>
+          Event Title <span className="text-status-danger">*</span>
         </label>
         <input
           id="event-title"
@@ -93,12 +94,13 @@ export function ProfileReviewForm({
           onChange={(e) => setProfile({ ...profile, title: e.target.value })}
           aria-describedby={errors.title ? "title-error" : undefined}
           aria-invalid={!!errors.title}
-          className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+          className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary"
           required
         />
         {errors.title && (
-          <p id="title-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-            {errors.title}
+          <p id="title-error" className="mt-1 text-xs text-status-danger flex items-center gap-1" role="alert">
+            <Icon name="alert" size={14} aria-hidden />
+            <span>{errors.title}</span>
           </p>
         )}
       </div>
@@ -108,7 +110,7 @@ export function ProfileReviewForm({
         <div>
           <label
             htmlFor="event-type"
-            className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+            className="block text-sm font-semibold text-primary mb-1"
           >
             Event Category
           </label>
@@ -116,7 +118,7 @@ export function ProfileReviewForm({
             id="event-type"
             value={profile.type}
             onChange={(e) => setProfile({ ...profile, type: e.target.value as EventType })}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary cursor-pointer"
           >
             <option value="wedding">Wedding</option>
             <option value="birthday">Birthday</option>
@@ -128,9 +130,9 @@ export function ProfileReviewForm({
         <div>
           <label
             htmlFor="event-date"
-            className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+            className="block text-sm font-semibold text-primary mb-1"
           >
-            Event Date <span className="text-red-500">*</span>
+            Event Date <span className="text-status-danger">*</span>
           </label>
           <input
             id="event-date"
@@ -139,40 +141,43 @@ export function ProfileReviewForm({
             onChange={(e) => setProfile({ ...profile, eventDate: e.target.value })}
             aria-describedby={errors.eventDate ? "date-error" : undefined}
             aria-invalid={!!errors.eventDate}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary"
             required
           />
           {errors.eventDate && (
-            <p id="date-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-              {errors.eventDate}
+            <p id="date-error" className="mt-1 text-xs text-status-danger flex items-center gap-1" role="alert">
+              <Icon name="alert" size={14} aria-hidden />
+              <span>{errors.eventDate}</span>
             </p>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        {/* Guest Count */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {/* Guests */}
         <div>
           <label
-            htmlFor="event-guests"
-            className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+            htmlFor="guest-count"
+            className="block text-sm font-semibold text-primary mb-1"
           >
-            Guests
+            Guest Count
           </label>
           <input
-            id="event-guests"
+            id="guest-count"
             type="number"
-            min="0"
+            min={0}
             value={profile.guestCount}
             onChange={(e) =>
-              setProfile({ ...profile, guestCount: Math.max(0, parseInt(e.target.value) || 0) })
+              setProfile({ ...profile, guestCount: parseInt(e.target.value, 10) || 0 })
             }
             aria-describedby={errors.guestCount ? "guests-error" : undefined}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            aria-invalid={!!errors.guestCount}
+            className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary tnum"
           />
           {errors.guestCount && (
-            <p id="guests-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-              {errors.guestCount}
+            <p id="guests-error" className="mt-1 text-xs text-status-danger flex items-center gap-1" role="alert">
+              <Icon name="alert" size={14} aria-hidden />
+              <span>{errors.guestCount}</span>
             </p>
           )}
         </div>
@@ -181,38 +186,44 @@ export function ProfileReviewForm({
         <div>
           <label
             htmlFor="event-budget"
-            className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+            className="block text-sm font-semibold text-primary mb-1"
           >
-            Total Budget
+            Target Budget ({profile.currency})
           </label>
           <input
             id="event-budget"
-            type="text"
+            type="number"
+            min={0}
+            step="any"
             value={majorBudget}
             onChange={(e) => setMajorBudget(e.target.value)}
             aria-describedby={errors.budget ? "budget-error" : undefined}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            aria-invalid={!!errors.budget}
+            className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary tnum"
           />
           {errors.budget && (
-            <p id="budget-error" className="mt-1 text-sm text-red-600 dark:text-red-400" role="alert">
-              {errors.budget}
+            <p id="budget-error" className="mt-1 text-xs text-status-danger flex items-center gap-1" role="alert">
+              <Icon name="alert" size={14} aria-hidden />
+              <span>{errors.budget}</span>
             </p>
           )}
         </div>
+      </div>
 
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         {/* Currency */}
         <div>
           <label
-            htmlFor="event-currency"
-            className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+            htmlFor="profile-currency"
+            className="block text-sm font-semibold text-primary mb-1"
           >
             Currency
           </label>
           <select
-            id="event-currency"
+            id="profile-currency"
             value={profile.currency}
             onChange={(e) => setProfile({ ...profile, currency: e.target.value })}
-            className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+            className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary cursor-pointer"
           >
             <option value="USD">USD ($)</option>
             <option value="EUR">EUR (€)</option>
@@ -223,15 +234,38 @@ export function ProfileReviewForm({
             <option value="AUD">AUD ($)</option>
           </select>
         </div>
+
+        {/* Language */}
+        <div>
+          <label
+            htmlFor="profile-language"
+            className="block text-sm font-semibold text-primary mb-1"
+          >
+            Language
+          </label>
+          <select
+            id="profile-language"
+            value={profile.language}
+            onChange={(e) => setProfile({ ...profile, language: e.target.value })}
+            className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary cursor-pointer"
+          >
+            <option value="en">English</option>
+            <option value="hi">हिंदी (Hindi)</option>
+            <option value="bn">বাংলা (Bengali)</option>
+            <option value="es">Español (Spanish)</option>
+            <option value="fr">Français (French)</option>
+            <option value="de">Deutsch (German)</option>
+          </select>
+        </div>
       </div>
 
       {/* Location */}
       <div>
         <label
           htmlFor="event-location"
-          className="block text-sm font-medium text-stone-900 dark:text-stone-200 mb-1"
+          className="block text-sm font-semibold text-primary mb-1"
         >
-          Location / Venue
+          Location
         </label>
         <input
           id="event-location"
@@ -239,21 +273,22 @@ export function ProfileReviewForm({
           value={profile.location || ""}
           placeholder="e.g. City, specific venue, or Online"
           onChange={(e) => setProfile({ ...profile, location: e.target.value })}
-          className="w-full px-3.5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 focus:outline-none focus:ring-2 focus:ring-amber-500"
+          className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary"
         />
       </div>
 
       {/* Type Specific Fields */}
       {profile.type === "wedding" && (
-        <div className="bg-amber-50/60 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-900/40 rounded-lg p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-amber-900 dark:text-amber-200">
-            Wedding Details
+        <Surface variant="elevated" tint="wedding" className="p-4 space-y-3">
+          <h3 className="text-sm font-bold font-display text-primary flex items-center gap-1.5">
+            <Icon name="wedding" size={16} aria-hidden />
+            Wedding parameters
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div>
               <label
                 htmlFor="wedding-tradition"
-                className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1"
+                className="block text-xs font-semibold text-secondary mb-1"
               >
                 Tradition / Style
               </label>
@@ -273,11 +308,11 @@ export function ProfileReviewForm({
                     },
                   })
                 }
-                className="w-full text-sm px-3 py-2 rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                className="w-full h-9 text-sm px-3 py-1.5 rounded-control border border-border-strong bg-surface text-primary"
               />
             </div>
             <div className="flex items-center pt-5">
-              <label className="flex items-center space-x-2 text-sm text-stone-800 dark:text-stone-200 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-primary cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={profile.weddingExtras?.accommodationsNeeded || false}
@@ -292,57 +327,90 @@ export function ProfileReviewForm({
                       },
                     })
                   }
-                  className="rounded border-stone-300 text-amber-600 focus:ring-amber-500 h-4 w-4"
+                  className="rounded-control border-border-strong text-primary h-4 w-4"
                 />
                 <span>Guest accommodations needed</span>
               </label>
             </div>
           </div>
-        </div>
+        </Surface>
       )}
 
       {profile.type === "birthday" && (
-        <div className="bg-blue-50/60 dark:bg-blue-950/20 border border-blue-200 dark:border-blue-900/40 rounded-lg p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-200">
-            Birthday Details
+        <Surface variant="elevated" tint="birthday" className="p-4 space-y-3">
+          <h3 className="text-sm font-bold font-display text-primary flex items-center gap-1.5">
+            <Icon name="birthday" size={16} aria-hidden />
+            Birthday parameters
           </h3>
-          <div>
-            <label
-              htmlFor="birthday-age"
-              className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1"
-            >
-              Age Group / Milestone
-            </label>
-            <input
-              id="birthday-age"
-              type="text"
-              placeholder="e.g. 7th Birthday, Sweet 16, 40th Milestone"
-              value={profile.birthdayExtras?.ageGroup || ""}
-              onChange={(e) =>
-                setProfile({
-                  ...profile,
-                  birthdayExtras: {
-                    allergens: profile.birthdayExtras?.allergens || [],
-                    ageGroup: e.target.value,
-                    supervisionRatio: profile.birthdayExtras?.supervisionRatio,
-                    notes: profile.birthdayExtras?.notes,
-                  },
-                })
-              }
-              className="w-full text-sm px-3 py-2 rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <label
+                htmlFor="birthday-age"
+                className="block text-xs font-semibold text-secondary mb-1"
+              >
+                Age Group / Milestone
+              </label>
+              <input
+                id="birthday-age"
+                type="text"
+                placeholder="e.g. 7th Birthday, Sweet 16, 30th"
+                value={profile.birthdayExtras?.ageGroup || ""}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    birthdayExtras: {
+                      allergens: profile.birthdayExtras?.allergens || [],
+                      ageGroup: e.target.value,
+                      notes: profile.birthdayExtras?.notes,
+                      supervisionRatio: profile.birthdayExtras?.supervisionRatio,
+                    },
+                  })
+                }
+                className="w-full h-9 text-sm px-3 py-1.5 rounded-control border border-border-strong bg-surface text-primary"
+              />
+            </div>
+            <div>
+              <label
+                htmlFor="birthday-allergens"
+                className="block text-xs font-semibold text-secondary mb-1"
+              >
+                Allergies & Dietary Restrictions
+              </label>
+              <input
+                id="birthday-allergens"
+                type="text"
+                placeholder="e.g. peanuts, dairy, gluten-free"
+                value={(profile.birthdayExtras?.allergens || []).join(", ")}
+                onChange={(e) =>
+                  setProfile({
+                    ...profile,
+                    birthdayExtras: {
+                      ageGroup: profile.birthdayExtras?.ageGroup || "",
+                      notes: profile.birthdayExtras?.notes,
+                      supervisionRatio: profile.birthdayExtras?.supervisionRatio,
+                      allergens: e.target.value
+                        .split(",")
+                        .map((s) => s.trim())
+                        .filter(Boolean),
+                    },
+                  })
+                }
+                className="w-full h-9 text-sm px-3 py-1.5 rounded-control border border-border-strong bg-surface text-primary"
+              />
+            </div>
           </div>
-        </div>
+        </Surface>
       )}
 
       {profile.type === "community" && (
-        <div className="bg-emerald-50/60 dark:bg-emerald-950/20 border border-emerald-200 dark:border-emerald-900/40 rounded-lg p-4 space-y-3">
-          <h3 className="text-sm font-semibold text-emerald-900 dark:text-emerald-200">
-            Community Event Details
+        <Surface variant="elevated" tint="community" className="p-4 space-y-3">
+          <h3 className="text-sm font-bold font-display text-primary flex items-center gap-1.5">
+            <Icon name="community" size={16} aria-hidden />
+            Community parameters
           </h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <div className="flex items-center pt-2">
-              <label className="flex items-center space-x-2 text-sm text-stone-800 dark:text-stone-200 cursor-pointer">
+              <label className="flex items-center gap-2 text-sm text-primary cursor-pointer select-none">
                 <input
                   type="checkbox"
                   checked={profile.communityExtras?.permitRequired || false}
@@ -350,79 +418,72 @@ export function ProfileReviewForm({
                     setProfile({
                       ...profile,
                       communityExtras: {
-                        isFree: profile.communityExtras?.isFree ?? true,
-                        permitRequired: e.target.checked,
                         volunteerCount: profile.communityExtras?.volunteerCount || 0,
+                        isFree: profile.communityExtras?.isFree ?? true,
                         sponsorTargetMinor: profile.communityExtras?.sponsorTargetMinor || 0,
-                        notes: profile.communityExtras?.notes,
+                        permitRequired: e.target.checked,
                       },
                     })
                   }
-                  className="rounded border-stone-300 text-emerald-600 focus:ring-emerald-500 h-4 w-4"
+                  className="rounded-control border-border-strong text-primary h-4 w-4"
                 />
-                <span>City / Park permit required</span>
+                <span>City / park permit required</span>
               </label>
             </div>
             <div>
               <label
                 htmlFor="community-volunteers"
-                className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1"
+                className="block text-xs font-semibold text-secondary mb-1"
               >
-                Target Volunteers
+                Target Volunteer Crew
               </label>
               <input
                 id="community-volunteers"
                 type="number"
-                min="0"
+                min={0}
                 value={profile.communityExtras?.volunteerCount || 0}
                 onChange={(e) =>
                   setProfile({
                     ...profile,
                     communityExtras: {
-                      isFree: profile.communityExtras?.isFree ?? true,
                       permitRequired: profile.communityExtras?.permitRequired || false,
-                      volunteerCount: parseInt(e.target.value) || 0,
+                      isFree: profile.communityExtras?.isFree ?? true,
                       sponsorTargetMinor: profile.communityExtras?.sponsorTargetMinor || 0,
-                      notes: profile.communityExtras?.notes,
+                      volunteerCount: parseInt(e.target.value, 10) || 0,
                     },
                   })
                 }
-                className="w-full text-sm px-3 py-2 rounded-md border border-stone-300 dark:border-stone-700 bg-white dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+                className="w-full h-9 text-sm px-3 py-1.5 rounded-control border border-border-strong bg-surface text-primary tnum"
               />
             </div>
           </div>
-        </div>
+        </Surface>
       )}
 
       {/* Action buttons */}
-      <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-stone-200 dark:border-stone-800">
+      <div className="flex flex-col-reverse sm:flex-row items-center justify-end gap-3 pt-4 border-t border-border-subtle">
         {onCancel && (
-          <button
+          <Button
             type="button"
+            variant="secondary"
+            size="md"
             onClick={onCancel}
             disabled={isLoading}
-            className="w-full sm:w-auto px-5 py-2.5 rounded-lg border border-stone-300 dark:border-stone-700 text-stone-700 dark:text-stone-300 font-medium hover:bg-stone-100 dark:hover:bg-stone-800 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[44px]"
+            className="w-full sm:w-auto"
           >
             Back
-          </button>
+          </Button>
         )}
-        <button
+        <Button
           type="submit"
+          variant="primary"
+          size="md"
           disabled={isLoading}
-          className="w-full sm:w-auto px-6 py-2.5 rounded-lg bg-amber-600 hover:bg-amber-700 text-white font-medium shadow-sm transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 min-h-[44px] flex items-center justify-center gap-2 disabled:opacity-50"
+          isLoading={isLoading}
+          className="w-full sm:w-auto"
         >
-          {isLoading ? (
-            <>
-              <svg className="animate-spin h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-              </svg>
-              <span>Generating Plan...</span>
-            </>
-          ) : (
-            <span>Generate Full Plan</span>
-          )}
-        </button>
+          {isLoading ? "Generating Plan..." : "Generate Full Plan"}
+        </Button>
       </div>
     </form>
   );

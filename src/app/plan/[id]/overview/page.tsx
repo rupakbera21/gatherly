@@ -3,7 +3,7 @@
 /**
  * @module PlanOverviewPage
  * @purpose Main dashboard overview for an event plan.
- *          Displays progress, next three priority milestones, budget health gauge,
+ *          Displays cue sheet (Next up run list), budget health, milestone progress,
  *          and parallel module generator with concurrency cap.
  * @rubric Problem Statement Alignment & UX – Next actions, progress health, and parallel generation.
  */
@@ -13,6 +13,7 @@ import Link from "next/link";
 import { formatCurrency } from "@/domain/money";
 import { useGatherlyStore } from "@/store";
 import { announce } from "@/services/announce";
+import { Button, Icon, Badge, Surface } from "@/components/ui";
 
 /**
  * Execute task functions concurrently with a strict worker cap (concurrency cap 3-4)
@@ -61,7 +62,6 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
   if (!plan) return null;
 
   // Budget calculations
-  const _totalAllocated = plan.budgetCategories.reduce((acc, c) => acc + c.allocatedMinor, 0);
   const totalSpent = plan.budgetCategories.reduce((acc, c) => acc + c.spentMinor, 0);
   const budgetUtilization =
     plan.profile.budgetMinor > 0
@@ -174,7 +174,6 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
       },
     ];
 
-    // Concurrency cap: execute with Promise.allSettled and a concurrency cap of 3
     const settled = await settleWithConcurrencyCap(tasks.map((t) => t.run), 3);
     const hasFailure = settled.some((r) => r.status === "rejected");
 
@@ -195,186 +194,214 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
     plan.vendors.length === 0;
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Brand New Plan Initial Generation Banner */}
       {isBrandNewPlan && (
-        <div className="bg-gradient-to-r from-amber-500/10 via-amber-600/10 to-orange-500/10 border border-amber-300 dark:border-amber-800 rounded-2xl p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <Surface variant="elevated" className="p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-l-4 border-l-primary-600">
           <div>
-            <h2 className="text-xl font-bold text-stone-900 dark:text-stone-100">
+            <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 font-display">
               Generate Your Complete Event Plan
             </h2>
-            <p className="text-sm text-stone-600 dark:text-stone-400 mt-1 max-w-xl">
+            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-xl">
               One click builds your tailored budget allocation, backward-planned milestones, vendor checklist, and personalized ideas concurrently.
             </p>
           </div>
-          <button
+          <Button
+            variant="primary"
+            size="lg"
             onClick={handleGenerateFullPlan}
+            isLoading={isGeneratingAll}
             disabled={isGeneratingAll}
-            className="px-6 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 min-h-[48px] flex items-center gap-2 whitespace-nowrap disabled:opacity-50"
+            icon="sparkles"
           >
-            {isGeneratingAll ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <span>Generating Plan Modules...</span>
-              </>
-            ) : (
-              <span>✦ Generate Full Plan</span>
-            )}
-          </button>
-        </div>
+            {isGeneratingAll ? "Generating Plan Modules..." : "Generate Full Plan"}
+          </Button>
+        </Surface>
       )}
 
-      {/* Progress Metric Cards */}
+      {/* Progress Metric Bento Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {/* Budget Health */}
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400 mb-2">
-            <span>BUDGET HEALTH</span>
-            <Link href={`/plan/${eventId}/budget`} className="text-amber-600 dark:text-amber-400 hover:underline">
-              View →
-            </Link>
+        <Surface className="p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
+              <span className="uppercase tracking-wider">Budget Health</span>
+              <Link href={`/plan/${eventId}/budget`} className="text-primary-600 dark:text-primary-400 hover:underline">
+                View
+              </Link>
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+              {formatCurrency(totalSpent, plan.profile.currency)}
+            </div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 tnum">
+              of {formatCurrency(plan.profile.budgetMinor, plan.profile.currency)} total
+            </div>
           </div>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100">
-            {formatCurrency(totalSpent, plan.profile.currency)}
+          <div className="mt-4">
+            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+              <div
+                className={`h-2 rounded-full transition-all ${
+                  totalSpent > plan.profile.budgetMinor ? "bg-danger" : "bg-success"
+                }`}
+                style={{ width: `${budgetUtilization}%` }}
+              />
+            </div>
+            <div className="mt-2 text-xs font-semibold flex items-center gap-1.5">
+              {totalSpent > plan.profile.budgetMinor ? (
+                <span className="text-danger inline-flex items-center gap-1">
+                  <Icon name="alert-triangle" size="xs" aria-hidden="true" />
+                  <span>Over Budget</span>
+                </span>
+              ) : (
+                <span className="text-success inline-flex items-center gap-1">
+                  <Icon name="check" size="xs" aria-hidden="true" />
+                  <span>On Budget</span>
+                </span>
+              )}
+            </div>
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            of {formatCurrency(plan.profile.budgetMinor, plan.profile.currency)} total
-          </div>
-          <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 mt-3 overflow-hidden">
-            <div
-              className={`h-2 rounded-full transition-all ${
-                totalSpent > plan.profile.budgetMinor ? "bg-red-500" : "bg-emerald-500"
-              }`}
-              style={{ width: `${budgetUtilization}%` }}
-            />
-          </div>
-          <div className="mt-2 text-xs font-semibold">
-            {totalSpent > plan.profile.budgetMinor ? (
-              <span className="text-red-600 dark:text-red-400">⚠️ Over Budget</span>
-            ) : (
-              <span className="text-emerald-600 dark:text-emerald-400">✓ On Budget</span>
-            )}
-          </div>
-        </div>
+        </Surface>
 
         {/* Timeline Progress */}
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400 mb-2">
-            <span>TIMELINE</span>
-            <Link href={`/plan/${eventId}/timeline`} className="text-amber-600 dark:text-amber-400 hover:underline">
-              View →
-            </Link>
+        <Surface className="p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
+              <span className="uppercase tracking-wider">Milestones</span>
+              <Link href={`/plan/${eventId}/timeline`} className="text-primary-600 dark:text-primary-400 hover:underline">
+                View
+              </Link>
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+              {completedMilestones} of {totalMilestones}
+            </div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              completed
+            </div>
           </div>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100">
-            {completedMilestones} / {totalMilestones}
+          <div className="mt-4">
+            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-2 rounded-full bg-primary-600 transition-all"
+                style={{ width: `${milestoneProgress}%` }}
+              />
+            </div>
+            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 tnum">
+              {milestoneProgress}% complete
+            </div>
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            milestones completed ({milestoneProgress}%)
-          </div>
-          <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 mt-3 overflow-hidden">
-            <div className="bg-blue-500 h-2 rounded-full transition-all" style={{ width: `${milestoneProgress}%` }} />
-          </div>
-        </div>
+        </Surface>
 
         {/* Vendors Booked */}
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400 mb-2">
-            <span>VENDORS</span>
-            <Link href={`/plan/${eventId}/vendors`} className="text-amber-600 dark:text-amber-400 hover:underline">
-              View →
-            </Link>
+        <Surface className="p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
+              <span className="uppercase tracking-wider">Vendors</span>
+              <Link href={`/plan/${eventId}/vendors`} className="text-primary-600 dark:text-primary-400 hover:underline">
+                View
+              </Link>
+            </div>
+            <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+              {bookedVendors} of {totalVendors}
+            </div>
+            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              booked
+            </div>
           </div>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100">
-            {bookedVendors} / {totalVendors}
+          <div className="mt-4">
+            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-2 rounded-full bg-primary-600 transition-all"
+                style={{
+                  width: `${totalVendors > 0 ? Math.round((bookedVendors / totalVendors) * 100) : 0}%`,
+                }}
+              />
+            </div>
+            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 tnum">
+              {totalVendors - bookedVendors} pending decisions
+            </div>
           </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            key vendors booked
-          </div>
-          <div className="w-full bg-stone-100 dark:bg-stone-800 rounded-full h-2 mt-3 overflow-hidden">
-            <div
-              className="bg-purple-500 h-2 rounded-full transition-all"
-              style={{ width: `${totalVendors > 0 ? (bookedVendors / totalVendors) * 100 : 0}%` }}
-            />
-          </div>
-        </div>
+        </Surface>
 
-        {/* Personalized Ideas */}
-        <div className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-xl p-5 shadow-sm">
-          <div className="flex items-center justify-between text-xs font-semibold text-stone-500 dark:text-stone-400 mb-2">
-            <span>SAVED IDEAS</span>
-            <Link href={`/plan/${eventId}/ideas`} className="text-amber-600 dark:text-amber-400 hover:underline">
-              View →
+        {/* Ideas Saved */}
+        <Surface className="p-5 flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between text-xs font-semibold text-secondary mb-2">
+              <span className="uppercase tracking-wider">Ideas Board</span>
+              <Link href={`/plan/${eventId}/ideas`} className="text-primary hover:underline">
+                View
+              </Link>
+            </div>
+            <div className="text-xl font-bold text-primary tnum">
+              {plan.ideas.filter((i) => i.status === "saved").length}
+            </div>
+            <div className="text-xs text-secondary mt-0.5">
+              saved recommendations
+            </div>
+          </div>
+          <div className="mt-4">
+            <Link
+              href={`/plan/${eventId}/ideas`}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              <span>Explore suggestions</span>
             </Link>
           </div>
-          <div className="text-xl font-bold text-stone-900 dark:text-stone-100">
-            {plan.ideas.filter((i) => i.status === "saved" || i.addedToPlan).length}
-          </div>
-          <div className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-            ideas added to your plan
-          </div>
-          <div className="text-xs text-amber-600 dark:text-amber-400 mt-3 font-medium">
-            {plan.ideas.length} total suggestions available
-          </div>
-        </div>
+        </Surface>
       </div>
 
-      {/* Next 3 Priority Actions */}
-      <section className="bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+      {/* Hero Element: Time-Ordered Cue List / Run Sheet ("Next Up") */}
+      <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-xs space-y-4" aria-labelledby="cue-sheet-heading">
+        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
           <div>
-            <h2 className="text-lg font-bold text-stone-900 dark:text-stone-100">
-              Next Priority Actions
-            </h2>
-            <p className="text-xs text-stone-500 dark:text-stone-400 mt-0.5">
-              The next critical milestones to keep your event on schedule.
+            <h3 id="cue-sheet-heading" className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+              Production Cue Sheet: Next Milestones
+            </h3>
+            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+              Operational call-order based on schedule dependencies and target dates.
             </p>
           </div>
           <Link
             href={`/plan/${eventId}/timeline`}
-            className="text-xs font-semibold text-amber-600 dark:text-amber-400 hover:underline"
+            className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
           >
-            Full Timeline →
+            Full timeline
           </Link>
         </div>
 
         {nextActions.length === 0 ? (
-          <p className="text-sm text-stone-500 dark:text-stone-400 py-4 italic">
-            No pending milestones. All tasks are complete or timeline is empty.
-          </p>
+          <div className="text-center py-10 text-xs text-neutral-500 dark:text-neutral-400">
+            {totalMilestones === 0
+              ? "No milestones generated yet. Use the full plan button above to generate a timeline."
+              : "All scheduled milestones completed."}
+          </div>
         ) : (
-          <div className="space-y-3">
-            {nextActions.map((action) => (
+          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            {nextActions.map((action, idx) => (
               <div
                 key={action.id}
-                className="flex items-center justify-between p-3.5 rounded-xl border border-stone-100 dark:border-stone-800 bg-stone-50 dark:bg-stone-800/40"
+                className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 px-2 rounded-md transition-colors"
               >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`w-3 h-3 rounded-full ${
-                      action.isCriticalPath ? "bg-red-500" : "bg-amber-500"
-                    }`}
-                    title={action.isCriticalPath ? "Critical Path Item" : "Standard Milestone"}
-                  />
+                <div className="flex items-start gap-3">
+                  <span className="w-6 h-6 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center shrink-0 tnum font-mono">
+                    {String(idx + 1).padStart(2, "0")}
+                  </span>
                   <div>
-                    <h3 className="text-sm font-semibold text-stone-900 dark:text-stone-100">
+                    <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
                       {action.title}
-                    </h3>
-                    <p className="text-xs text-stone-500 dark:text-stone-400">
-                      Category: {action.category} {action.notes && `• ${action.notes}`}
+                    </h4>
+                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                      Category: {action.category} {action.notes && `· ${action.notes}`}
                     </p>
                   </div>
                 </div>
-                <div className="text-right">
-                  <span className="text-xs font-medium text-stone-600 dark:text-stone-300 block">
+                <div className="flex items-center gap-3 self-end sm:self-center">
+                  <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300 font-mono tnum">
                     Due: {action.dueDate}
                   </span>
                   {action.isCriticalPath && (
-                    <span className="text-[10px] font-bold text-red-600 dark:text-red-400 uppercase tracking-wider">
+                    <Badge variant="danger" size="sm">
                       Critical Path
-                    </span>
+                    </Badge>
                   )}
                 </div>
               </div>
@@ -386,13 +413,15 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
       {/* Re-generate or Refresh Options */}
       {!isBrandNewPlan && (
         <div className="flex justify-end gap-3 pt-2">
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
             onClick={handleGenerateFullPlan}
+            isLoading={isGeneratingAll}
             disabled={isGeneratingAll}
-            className="text-xs font-medium px-4 py-2 rounded-lg border border-stone-300 dark:border-stone-700 hover:bg-stone-100 dark:hover:bg-stone-800 text-stone-700 dark:text-stone-300 transition-colors min-h-[44px]"
           >
             {isGeneratingAll ? "Regenerating..." : "Regenerate All Modules"}
-          </button>
+          </Button>
         </div>
       )}
     </div>

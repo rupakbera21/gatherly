@@ -15,6 +15,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { diffPatch, PlanPatch } from "@/domain/patches";
 import { EventPlan } from "@/domain/types";
 import { useGatherlyStore } from "@/store";
+import { Button, Icon, Badge, Input } from "@/components/ui";
 
 interface CopilotDrawerProps {
   plan: EventPlan;
@@ -56,13 +57,11 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
   // Focus the close button when drawer opens; restore to trigger on close.
   useEffect(() => {
     if (isOpen) {
-      // Defer focus to allow animation frame to complete
       const id = requestAnimationFrame(() => {
         closeButtonRef.current?.focus();
       });
       return () => cancelAnimationFrame(id);
     } else {
-      // Return focus to the button that opened the drawer
       if (triggerRef?.current) {
         triggerRef.current.focus();
       }
@@ -123,7 +122,7 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
     setMessages((prev) => [...prev, userMsg]);
     setInputMessage("");
     setIsLoading(true);
-    setLiveAnnouncement("Copilot is thinking…");
+    setLiveAnnouncement("Copilot is thinking...");
 
     try {
       const res = await fetch("/api/copilot", {
@@ -187,7 +186,7 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
   }
 
   return (
-    <div className="fixed inset-0 z-50 overflow-hidden bg-slate-950/60 backdrop-blur-xs flex justify-end animate-fade-in">
+    <div className="fixed inset-0 z-50 overflow-hidden bg-neutral-950/60 backdrop-blur-xs flex justify-end">
       {/* Single polite aria-live region for all status announcements */}
       <div role="status" aria-live="polite" aria-atomic="true" className="sr-only">
         {liveAnnouncement}
@@ -198,22 +197,20 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
         role="dialog"
         aria-modal="true"
         aria-labelledby="copilot-drawer-title"
-        className="w-full max-w-lg bg-white dark:bg-slate-900 border-l border-slate-200 dark:border-slate-800 shadow-2xl flex flex-col h-full animate-slide-left"
+        className="w-full max-w-lg bg-white dark:bg-neutral-900 border-l border-neutral-200 dark:border-neutral-800 shadow-2xl flex flex-col h-full"
         onKeyDown={handleKeyDown}
       >
         {/* Header */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-900/50">
-          <div className="flex items-center gap-2">
-            <span className="p-1.5 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-              </svg>
+        <div className="p-4 border-b border-neutral-200 dark:border-neutral-800 flex items-center justify-between bg-neutral-50/50 dark:bg-neutral-900/50">
+          <div className="flex items-center gap-2.5">
+            <span className="p-1.5 rounded-md bg-primary-50 text-primary-600 dark:bg-primary-950 dark:text-primary-300">
+              <Icon name="sparkles" size="sm" aria-hidden="true" />
             </span>
             <div>
-              <h2 id="copilot-drawer-title" className="text-sm font-bold text-slate-900 dark:text-white">
+              <h2 id="copilot-drawer-title" className="text-sm font-bold text-neutral-900 dark:text-neutral-100 font-display">
                 Plan Copilot
               </h2>
-              <p className="text-[11px] text-slate-500">
+              <p className="text-xs text-neutral-500">
                 AI partner with previewable changes
               </p>
             </div>
@@ -223,11 +220,9 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
             ref={closeButtonRef}
             onClick={onClose}
             aria-label="Close Copilot drawer"
-            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 transition-colors"
+            className="p-1.5 rounded-md text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors"
           >
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-            </svg>
+            <Icon name="x" size="sm" aria-hidden="true" />
           </button>
         </div>
 
@@ -242,10 +237,10 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
                 className={`flex flex-col ${isUser ? "items-end" : "items-start"} space-y-2`}
               >
                 <div
-                  className={`max-w-[88%] p-3 rounded-2xl text-xs leading-relaxed ${
+                  className={`max-w-md p-3.5 rounded-lg text-xs leading-relaxed ${
                     isUser
-                      ? "bg-indigo-600 text-white rounded-tr-xs"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-800 dark:text-slate-200 rounded-tl-xs"
+                      ? "bg-primary-600 text-white"
+                      : "bg-neutral-100 dark:bg-neutral-800 text-neutral-800 dark:text-neutral-200"
                   }`}
                 >
                   {msg.text}
@@ -253,15 +248,16 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
 
                 {/* Proposed Patches Card */}
                 {msg.patches && msg.patches.length > 0 && (
-                  <div className="w-[95%] p-3 rounded-xl border border-indigo-200 dark:border-indigo-900/60 bg-indigo-50/40 dark:bg-indigo-950/20 space-y-2.5">
+                  <div className="w-full p-3.5 rounded-md border border-primary-200 dark:border-primary-900/60 bg-primary-50/40 dark:bg-primary-950/20 space-y-2.5">
                     <div className="flex items-center justify-between">
-                      <span className="text-[11px] font-bold text-indigo-700 dark:text-indigo-300 flex items-center gap-1">
-                        <span>✦</span> Proposed Plan Changes ({msg.patches.length})
+                      <span className="text-xs font-bold text-primary-700 dark:text-primary-300 flex items-center gap-1.5">
+                        <Icon name="sparkles" size="xs" aria-hidden="true" />
+                        <span>Proposed Plan Changes ({msg.patches.length})</span>
                       </span>
                       {msg.applied && (
-                        <span className="text-[10px] font-semibold text-emerald-600 dark:text-emerald-400">
-                          ✓ Applied
-                        </span>
+                        <Badge variant="success" size="sm" icon="check">
+                          Applied
+                        </Badge>
                       )}
                     </div>
 
@@ -271,33 +267,34 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
                       return (
                         <div
                           key={idx}
-                          className="p-2.5 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 text-xs space-y-1.5"
+                          className="p-3 rounded-md bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-xs space-y-1.5"
                         >
-                          <div className="font-semibold text-slate-900 dark:text-white capitalize">
+                          <div className="font-semibold text-neutral-900 dark:text-neutral-100 capitalize">
                             Operation: {patch.op}
                           </div>
 
                           {diffs.map((d, dIdx) => (
-                            <div key={dIdx} className="text-[11px] space-y-0.5">
-                              <span className="font-medium text-slate-600 dark:text-slate-400">
+                            <div key={dIdx} className="text-xs space-y-0.5">
+                              <span className="font-medium text-neutral-600 dark:text-neutral-400">
                                 {d.field}:
                               </span>
-                              <div className="flex items-center gap-1.5 font-mono text-[10px]">
-                                <span className="line-through text-rose-500">{d.before}</span>
-                                <span>➔</span>
-                                <span className="text-emerald-600 dark:text-emerald-400 font-bold">{d.after}</span>
+                              <div className="flex items-center gap-1.5 font-mono text-xs tnum">
+                                <span className="line-through text-danger">{d.before}</span>
+                                <Icon name="arrow-right" size="xs" className="text-neutral-400" aria-hidden="true" />
+                                <span className="text-success font-bold">{d.after}</span>
                               </div>
                             </div>
                           ))}
 
                           {!msg.applied && (
-                            <div className="pt-1.5 flex justify-end">
-                              <button
+                            <div className="pt-2 flex justify-end">
+                              <Button
+                                variant="primary"
+                                size="sm"
                                 onClick={() => handleApplyPatch(msg.id, patch)}
-                                className="px-3 py-1 text-[11px] font-semibold rounded-md bg-indigo-600 text-white hover:bg-indigo-500 shadow-2xs"
                               >
                                 Approve &amp; Apply
-                              </button>
+                              </Button>
                             </div>
                           )}
                         </div>
@@ -311,18 +308,18 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
 
           {isLoading && (
             <div
-              className="flex items-center gap-2 p-3 rounded-2xl bg-slate-100 dark:bg-slate-800 text-xs text-slate-500 w-32 animate-pulse"
+              className="flex items-center gap-2 p-3 rounded-md bg-neutral-100 dark:bg-neutral-800 text-xs text-neutral-500 w-32 animate-pulse"
               aria-hidden="true"
             >
-              <span className="w-2 h-2 rounded-full bg-indigo-600 animate-bounce" />
+              <span className="w-2 h-2 rounded-full bg-primary-600 animate-bounce" />
               <span>Thinking...</span>
             </div>
           )}
         </div>
 
         {/* Input Bar */}
-        <form onSubmit={handleSendMessage} className="p-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex gap-2">
-          <input
+        <form onSubmit={handleSendMessage} className="p-3 border-t border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 flex gap-2">
+          <Input
             ref={inputRef}
             type="text"
             required
@@ -330,15 +327,16 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Ask Copilot or request an edit..."
-            className="flex-1 text-xs rounded-xl border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-800 px-3.5 py-2.5 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+            className="flex-1"
           />
-          <button
+          <Button
             type="submit"
+            variant="primary"
+            size="md"
             disabled={isLoading || !inputMessage.trim()}
-            className="px-4 py-2 text-xs font-semibold rounded-xl bg-indigo-600 text-white hover:bg-indigo-500 disabled:opacity-40 transition-colors shadow-xs"
           >
             Send
-          </button>
+          </Button>
         </form>
       </div>
     </div>

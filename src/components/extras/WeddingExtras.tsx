@@ -8,6 +8,7 @@
 
 import React, { useState } from "react";
 import { EventPlan } from "@/domain/types";
+import { Surface, Badge, Button, Input, Icon } from "@/components/ui";
 
 interface WeddingExtrasProps {
   plan: EventPlan;
@@ -67,57 +68,53 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
   const completedShots = shotList.filter((s) => s.done).length;
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Table & Seating Math */}
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3">
+        <Surface className="p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-pink-50 text-pink-700 dark:bg-pink-950/60 dark:text-pink-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-              </svg>
+            <span className="p-2 rounded-md bg-wedding-tint/15 text-wedding-tint">
+              <Icon name="users" size="sm" aria-hidden="true" />
             </span>
-            <h3 className="font-bold text-slate-900 dark:text-white">Table Seating Plan</h3>
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Table Seating Plan</h3>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
             For {guests} guests with standard 60-inch round tables (8 seats per table).
           </p>
-          <div className="p-3 bg-slate-50 dark:bg-slate-800/50 rounded-xl flex items-center justify-between">
-            <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">
+          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-md flex items-center justify-between">
+            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
               Recommended Tables:
             </span>
-            <span className="text-lg font-bold text-indigo-600 dark:text-indigo-400">
+            <span className="text-lg font-bold text-primary-600 dark:text-primary-400 tnum">
               {numTables} Round Tables
             </span>
           </div>
-          <div className="text-[11px] text-slate-500">
+          <div className="text-xs text-neutral-500">
             Includes 1 Head Table / Sweetheart Table + {Math.max(0, numTables - 1)} Guest Tables.
           </div>
-        </div>
+        </Surface>
 
         {/* Dietary Restrictions Tally */}
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-3 md:col-span-2">
+        <Surface className="p-5 space-y-3 md:col-span-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="p-2 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+              <span className="p-2 rounded-md bg-success/15 text-success">
+                <Icon name="check" size="sm" aria-hidden="true" />
               </span>
-              <h3 className="font-bold text-slate-900 dark:text-white">
-                Dietary & Catering Breakdown
+              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">
+                Dietary &amp; Catering Breakdown
               </h3>
             </div>
-            <span className="text-xs text-slate-500 font-mono">
+            <span className="text-xs text-neutral-500 font-mono tnum">
               Total Meals: {Object.values(dietary).reduce((a, b) => a + b, 0)} / {guests}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
             {Object.entries(dietary).map(([key, val]) => (
-              <div key={key} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 text-center">
-                <p className="text-[11px] font-medium text-slate-500 capitalize">
+              <div key={key} className="p-3 rounded-md bg-neutral-50 dark:bg-neutral-800/50 text-center">
+                <p className="text-xs font-medium text-neutral-500 capitalize">
                   {key.replace(/([A-Z])/g, " $1")}
                 </p>
                 <div className="flex items-center justify-center gap-2 mt-1">
@@ -125,16 +122,18 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
                     onClick={() =>
                       setDietary((p) => ({ ...p, [key]: Math.max(0, p[key as keyof typeof dietary] - 1) }))
                     }
-                    className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-300"
+                    className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 flex items-center justify-center"
+                    aria-label={`Decrease ${key}`}
                   >
                     -
                   </button>
-                  <span className="text-base font-bold text-slate-900 dark:text-white">{val}</span>
+                  <span className="text-base font-bold text-neutral-900 dark:text-neutral-100 tnum">{val}</span>
                   <button
                     onClick={() =>
                       setDietary((p) => ({ ...p, [key]: p[key as keyof typeof dietary] + 1 }))
                     }
-                    className="w-5 h-5 rounded-full bg-slate-200 dark:bg-slate-700 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-300"
+                    className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 flex items-center justify-center"
+                    aria-label={`Increase ${key}`}
                   >
                     +
                   </button>
@@ -142,50 +141,60 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
               </div>
             ))}
           </div>
-        </div>
+        </Surface>
       </div>
 
       {/* Photography Shot List */}
-      <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <Surface className="p-6 space-y-4">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-neutral-100 dark:border-neutral-800">
           <div>
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-100 font-display">
               Day-of Photography Shot List
-              <span className="text-xs font-normal px-2.5 py-0.5 rounded-full bg-indigo-50 text-indigo-700 dark:bg-indigo-950 dark:text-indigo-300 font-mono">
-                {completedShots}/{shotList.length} captured
-              </span>
             </h3>
-            <p className="text-xs text-slate-600 dark:text-slate-400">
-              Essential captures to share with your primary and secondary photographers.
+            <p className="text-xs text-neutral-500">
+              Essential must-have moments from ceremony to reception send-off.
             </p>
           </div>
-
-          <form onSubmit={addCustomShot} className="flex gap-2">
-            <input
-              type="text"
-              aria-label="Add custom photo request"
-              value={newShot}
-              onChange={(e) => setNewShot(e.target.value)}
-              placeholder="Add custom photo request..."
-              className="text-xs rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-1.5 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500 w-56"
-            />
-            <button
-              type="submit"
-              className="px-3 py-1.5 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 shadow-xs"
-            >
-              Add Shot
-            </button>
-          </form>
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 tnum">
+              {completedShots} of {shotList.length} captured
+            </span>
+            <div className="w-24 bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+              <div
+                className="h-2 rounded-full bg-primary-600 transition-all"
+                style={{ width: `${shotList.length ? Math.round((completedShots / shotList.length) * 100) : 0}%` }}
+              />
+            </div>
+          </div>
         </div>
+
+        {/* Add custom shot */}
+        <form onSubmit={addCustomShot} className="flex gap-2">
+          <Input
+            type="text"
+            value={newShot}
+            onChange={(e) => setNewShot(e.target.value)}
+            placeholder="Add custom shot (e.g. Groom reading letter, Grandma dancing)..."
+            className="flex-1"
+          />
+          <Button
+            type="submit"
+            variant="secondary"
+            size="md"
+            icon="plus"
+          >
+            Add Shot
+          </Button>
+        </form>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3 pt-2">
           {shotList.map((shot) => (
             <div
               key={shot.id}
-              className={`flex items-start gap-3 p-3 rounded-xl border transition-colors ${
+              className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
                 shot.done
-                  ? "bg-emerald-50/30 border-emerald-200 dark:bg-emerald-950/20 dark:border-emerald-900"
-                  : "bg-slate-50/50 border-slate-200 dark:bg-slate-800/40 dark:border-slate-800 hover:border-slate-300"
+                  ? "bg-success-surface border-success"
+                  : "bg-neutral-50 dark:bg-neutral-800/40 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"
               }`}
             >
               <input
@@ -193,17 +202,17 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
                 type="checkbox"
                 checked={shot.done}
                 onChange={() => toggleShot(shot.id)}
-                className="mt-0.5 h-4 w-4 rounded-sm border-slate-300 text-indigo-600 focus:ring-indigo-500 cursor-pointer"
+                className="mt-0.5 h-4 w-4 rounded-xs border-neutral-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
               />
               <label htmlFor={shot.id} className="space-y-0.5 cursor-pointer flex-1">
-                <span className="block text-[10px] font-semibold text-indigo-600 dark:text-indigo-400">
+                <Badge variant="neutral" size="sm">
                   {shot.category}
-                </span>
+                </Badge>
                 <span
-                  className={`block text-xs ${
+                  className={`block text-xs pt-1 ${
                     shot.done
-                      ? "line-through text-slate-400 dark:text-slate-500"
-                      : "text-slate-800 dark:text-slate-200"
+                      ? "line-through text-neutral-400 dark:text-neutral-500"
+                      : "text-neutral-800 dark:text-neutral-200"
                   }`}
                 >
                   {shot.item}
@@ -212,7 +221,7 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
             </div>
           ))}
         </div>
-      </div>
+      </Surface>
     </div>
   );
 }

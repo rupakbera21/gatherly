@@ -5,15 +5,21 @@
  */
 
 import type { Metadata, Viewport } from "next";
-import { Inter, Noto_Sans } from "next/font/google";
+import { Bricolage_Grotesque, Instrument_Sans, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { AccessibilityToolbar } from "@/components/AccessibilityToolbar";
 
-/* Self-hosted via next/font – no external font CDN requests needed in CSP */
-const inter = Inter({
+/* Self-hosted via next/font – distinct characterful display + quiet legible text sans */
+const bricolage = Bricolage_Grotesque({
   subsets: ["latin", "latin-ext"],
   display: "swap",
-  variable: "--font-inter",
+  variable: "--font-display",
+});
+
+const instrument = Instrument_Sans({
+  subsets: ["latin", "latin-ext"],
+  display: "swap",
+  variable: "--font-body",
 });
 
 const notoSans = Noto_Sans({
@@ -67,7 +73,7 @@ export default function RootLayout({
     <html
       lang="en"
       suppressHydrationWarning
-      className={`${inter.variable} ${notoSans.variable}`}
+      className={`${bricolage.variable} ${instrument.variable} ${notoSans.variable}`}
     >
       <body>
         {/* Skip navigation link for keyboard users */}

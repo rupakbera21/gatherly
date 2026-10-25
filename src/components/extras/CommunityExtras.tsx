@@ -3,11 +3,13 @@
 /**
  * @module CommunityExtras
  * @purpose Community event specialized tools: Municipal Permits Checklist, Volunteer Shift Roster, and Rain Plan.
+ *          Implements design system primitives, accessible table layout, and token compliance.
  * @rubric Problem Statement Alignment – Specialized municipal & public event management tools.
  */
 
 import React, { useState } from "react";
 import { EventPlan } from "@/domain/types";
+import { Surface, Badge, Icon } from "@/components/ui";
 
 interface CommunityExtrasProps {
   plan: EventPlan;
@@ -64,110 +66,104 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
   const totalVolunteersConfirmed = volunteers.reduce((a, b) => a + b.confirmed, 0);
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       {/* Top Summaries */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Permits KPI */}
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
+        <Surface className="p-5 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-emerald-50 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
-              </svg>
+            <span className="p-2 rounded-md bg-community-tint/15 text-community-tint">
+              <Icon name="file" size="sm" aria-hidden="true" />
             </span>
-            <h3 className="font-bold text-slate-900 dark:text-white">Municipal Permits</h3>
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Municipal Permits</h3>
           </div>
-          <p className="text-2xl font-bold text-slate-900 dark:text-white">
+          <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
             {approvedPermits} / {permits.length}{" "}
-            <span className="text-xs font-normal text-slate-400">Approved</span>
+            <span className="text-xs font-normal text-neutral-400">Approved</span>
           </p>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-neutral-500">
             Click any permit below to advance its compliance stage.
           </div>
-        </div>
+        </Surface>
 
         {/* Volunteer KPI */}
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
+        <Surface className="p-5 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-              </svg>
+            <span className="p-2 rounded-md bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-300">
+              <Icon name="users" size="sm" aria-hidden="true" />
             </span>
-            <h3 className="font-bold text-slate-900 dark:text-white">Volunteer Roster</h3>
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Volunteer Roster</h3>
           </div>
-          <p className="text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+          <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 tnum">
             {totalVolunteersConfirmed} / {totalVolunteersNeeded}{" "}
-            <span className="text-xs font-normal text-slate-400">Staffed</span>
+            <span className="text-xs font-normal text-neutral-400">Staffed</span>
           </p>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-neutral-500 tnum">
             Targeting 1 volunteer per 15 of your {plan.profile.guestCount} projected community attendees.
           </div>
-        </div>
+        </Surface>
 
         {/* Weather Contingency KPI */}
-        <div className="p-5 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-2">
+        <Surface className="p-5 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-blue-50 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 00-9.78 2.096A4.001 4.001 0 003 15z" />
-              </svg>
+            <span className="p-2 rounded-md bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-300">
+              <Icon name="clock" size="sm" aria-hidden="true" />
             </span>
-            <h3 className="font-bold text-slate-900 dark:text-white">Weather Protocol</h3>
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Weather Protocol</h3>
           </div>
-          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
+          <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 tnum">
             {rainPlan.decisionHoursBefore}h Call
           </p>
-          <div className="text-xs text-slate-500">
+          <div className="text-xs text-neutral-500">
             Indoor backup venue secured for severe weather disruption.
           </div>
-        </div>
+        </Surface>
       </div>
 
       {/* Permits Checklist Table */}
-      <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-          Municipal Ordinance & Regulatory Compliance
+      <Surface className="p-6 space-y-4">
+        <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+          Municipal Ordinance &amp; Regulatory Compliance
         </h3>
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
+          <table className="w-full text-left text-xs" aria-label="Permits checklist table">
+            <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-xs font-semibold text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-800 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3">Permit / Compliance Item</th>
-                <th className="px-4 py-3">Issuing Agency</th>
-                <th className="px-4 py-3">Lead Time</th>
-                <th className="px-4 py-3 text-right">Status</th>
+                <th scope="col" className="px-4 py-3">Permit / Compliance Item</th>
+                <th scope="col" className="px-4 py-3">Issuing Agency</th>
+                <th scope="col" className="px-4 py-3">Lead Time</th>
+                <th scope="col" className="px-4 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {permits.map((p) => {
-                const statusStyles: Record<string, string> = {
-                  Approved: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300",
-                  Pending: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300",
-                  "In Review": "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300",
-                  Required: "bg-rose-100 text-rose-800 dark:bg-rose-950/60 dark:text-rose-300",
+                const variantMap: Record<string, "success" | "warning" | "neutral" | "danger"> = {
+                  Approved: "success",
+                  Pending: "warning",
+                  "In Review": "neutral",
+                  Required: "danger",
                 };
 
                 return (
-                  <tr key={p.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
+                  <tr key={p.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+                    <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100">
                       {p.name}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-600 dark:text-slate-400">
+                    <td className="px-4 py-3 text-xs text-neutral-600 dark:text-neutral-400">
                       {p.agency}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500">
+                    <td className="px-4 py-3 text-xs text-neutral-500 font-mono tnum">
                       {p.leadWeeks} weeks prior
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
                         onClick={() => togglePermitStatus(p.id)}
-                        className={`px-3 py-1 text-xs font-bold rounded-lg cursor-pointer transition-colors ${
-                          statusStyles[p.status] || "bg-slate-100 text-slate-700"
-                        }`}
+                        className="cursor-pointer inline-flex"
                         title="Click to cycle status: Required -> In Review -> Pending -> Approved"
                       >
-                        {p.status}
+                        <Badge variant={variantMap[p.status] || "neutral"} size="sm">
+                          {p.status}
+                        </Badge>
                       </button>
                     </td>
                   </tr>
@@ -176,12 +172,12 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
             </tbody>
           </table>
         </div>
-      </div>
+      </Surface>
 
       {/* Volunteer Shift Roster */}
-      <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-          Volunteer Shift Schedule & Headcounts
+      <Surface className="p-6 space-y-4">
+        <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+          Volunteer Shift Schedule &amp; Headcounts
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {volunteers.map((v) => {
@@ -190,43 +186,39 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
             return (
               <div
                 key={v.id}
-                className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-3"
+                className="p-4 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="font-semibold text-sm text-slate-900 dark:text-white">
+                    <h4 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
                       {v.role}
                     </h4>
-                    <span className="text-xs text-slate-500 font-mono">{v.time}</span>
+                    <span className="text-xs text-neutral-500 font-mono tnum">{v.time}</span>
                   </div>
-                  <span
-                    className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                      isFull
-                        ? "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300"
-                        : "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300"
-                    }`}
-                  >
+                  <Badge variant={isFull ? "success" : "warning"} size="sm">
                     {v.confirmed} / {v.needed} Volunteers
-                  </span>
+                  </Badge>
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-slate-600 dark:text-slate-400">
+                  <span className="text-xs text-neutral-600 dark:text-neutral-400">
                     Adjust confirmed:
                   </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => adjustVolunteer(v.id, -1)}
-                      className="w-6 h-6 rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100"
+                      className="w-6 h-6 rounded-md bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 flex items-center justify-center cursor-pointer"
+                      aria-label={`Decrease volunteers for ${v.role}`}
                     >
                       -
                     </button>
-                    <span className="text-sm font-bold text-slate-900 dark:text-white w-6 text-center">
+                    <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100 w-6 text-center tnum">
                       {v.confirmed}
                     </span>
                     <button
                       onClick={() => adjustVolunteer(v.id, 1)}
-                      className="w-6 h-6 rounded-md bg-white dark:bg-slate-700 border border-slate-300 dark:border-slate-600 text-xs font-bold text-slate-700 dark:text-slate-200 hover:bg-slate-100"
+                      className="w-6 h-6 rounded-md bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 flex items-center justify-center cursor-pointer"
+                      aria-label={`Increase volunteers for ${v.role}`}
                     >
                       +
                     </button>
@@ -236,7 +228,7 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
             );
           })}
         </div>
-      </div>
+      </Surface>
     </div>
   );
 }

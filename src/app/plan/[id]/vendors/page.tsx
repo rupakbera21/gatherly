@@ -15,6 +15,7 @@ import { exportVendorsCsv } from "@/domain/csv";
 import { formatCurrency, toMinorUnits } from "@/domain/money";
 import { VendorItem } from "@/domain/types";
 import { useGatherlyStore } from "@/store";
+import { Button, Icon, Badge, Surface, Input } from "@/components/ui";
 
 interface VendorsPageProps {
   params: Promise<{ id: string }>;
@@ -23,12 +24,11 @@ interface VendorsPageProps {
 const PIPELINE_COLUMNS: Array<{
   id: VendorItem["status"];
   label: string;
-  badgeClass: string;
 }> = [
-  { id: "researching", label: "Researching", badgeClass: "bg-slate-100 text-slate-700 dark:bg-slate-800 dark:text-slate-300" },
-  { id: "contacted", label: "Contacted", badgeClass: "bg-blue-100 text-blue-800 dark:bg-blue-950/60 dark:text-blue-300" },
-  { id: "quoted", label: "Quoted", badgeClass: "bg-amber-100 text-amber-800 dark:bg-amber-950/60 dark:text-amber-300" },
-  { id: "booked", label: "Booked", badgeClass: "bg-emerald-100 text-emerald-800 dark:bg-emerald-950/60 dark:text-emerald-300" },
+  { id: "researching", label: "Researching" },
+  { id: "contacted", label: "Contacted" },
+  { id: "quoted", label: "Quoted" },
+  { id: "booked", label: "Booked" },
 ];
 
 export default function PlanVendorsPage({ params }: VendorsPageProps) {
@@ -145,27 +145,27 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
   }
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       {/* Header & Controls */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h2 className="text-2xl font-bold tracking-tight text-slate-900 dark:text-white">
+          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-display">
             Vendor Pipeline
           </h2>
-          <p className="text-sm text-slate-600 dark:text-slate-400">
+          <p className="text-sm text-neutral-600 dark:text-neutral-400">
             Source vendors, compare quotes, track lead-time constraints, and log bookings.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
           {/* View Mode Toggle */}
-          <div className="flex rounded-lg border border-slate-200 dark:border-slate-800 p-0.5 bg-slate-100 dark:bg-slate-900">
+          <div className="flex rounded-md border border-neutral-200 dark:border-neutral-800 p-0.5 bg-neutral-100 dark:bg-neutral-900">
             <button
               onClick={() => setViewMode("kanban")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                 viewMode === "kanban"
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
               }`}
             >
               Board
@@ -174,83 +174,79 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
               onClick={() => setViewMode("table")}
               className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
                 viewMode === "table"
-                  ? "bg-white dark:bg-slate-800 text-slate-900 dark:text-white shadow-xs"
-                  : "text-slate-600 dark:text-slate-400 hover:text-slate-900"
+                  ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs"
+                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
               }`}
             >
               Table
             </button>
           </div>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="download"
             onClick={handleExportCsv}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5 shadow-xs"
             title="Export vendor list to CSV"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-            </svg>
             Export CSV
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="secondary"
+            size="sm"
+            icon="sparkles"
             onClick={handleRegenerateVendors}
+            isLoading={isRegenerating}
             disabled={isRegenerating}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-slate-100 text-slate-700 hover:bg-slate-200 dark:bg-slate-800 dark:text-slate-300 dark:hover:bg-slate-700 transition-colors flex items-center gap-1.5 shadow-xs disabled:opacity-50"
           >
-            <svg className={`w-4 h-4 ${isRegenerating ? "animate-spin" : ""}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-            </svg>
             {isRegenerating ? "Regenerating..." : "Regenerate AI"}
-          </button>
+          </Button>
 
-          <button
+          <Button
+            variant="primary"
+            size="sm"
+            icon="plus"
             onClick={() => setIsAddOpen(true)}
-            className="px-3.5 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 transition-colors flex items-center gap-1.5 shadow-xs"
           >
-            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-            </svg>
             Add Vendor
-          </button>
+          </Button>
         </div>
       </div>
 
       {/* Summary KPI Cards */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Total Vendors</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">{vendors.length}</p>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Booked</p>
-          <p className="mt-1 text-2xl font-bold text-emerald-600 dark:text-emerald-400">
-            {bookedCount} <span className="text-xs font-normal text-slate-400">({vendors.length ? Math.round((bookedCount / vendors.length) * 100) : 0}%)</span>
+        <Surface className="p-4">
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Total Vendors</p>
+          <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">{vendors.length}</p>
+        </Surface>
+        <Surface className="p-4">
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Booked</p>
+          <p className="mt-1 text-2xl font-bold text-success tnum">
+            {bookedCount} <span className="text-xs font-normal text-neutral-400">({vendors.length ? Math.round((bookedCount / vendors.length) * 100) : 0}%)</span>
           </p>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Estimated Total</p>
-          <p className="mt-1 text-2xl font-bold text-slate-900 dark:text-white">
+        </Surface>
+        <Surface className="p-4">
+          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Estimated Total</p>
+          <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
             {formatCurrency(totalEstCostMinor, currency)}
           </p>
-        </div>
-        <div className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <p className="text-xs font-medium text-slate-500 dark:text-slate-400">Committed / Booked</p>
-          <p className="mt-1 text-2xl font-bold text-indigo-600 dark:text-indigo-400">
+        </Surface>
+        <Surface className="p-4">
+          <p className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wider">Committed / Booked</p>
+          <p className="mt-1 text-2xl font-bold text-primary-600 dark:text-primary-400 tnum">
             {formatCurrency(totalActualCostMinor, currency)}
           </p>
-        </div>
+        </Surface>
       </div>
 
       {/* Lead Time Alert Banner if tight */}
       {weeksUntilEvent <= 8 && (
-        <div className="p-4 rounded-xl bg-blue-50 dark:bg-blue-950/40 border border-blue-200 dark:border-blue-900 text-blue-900 dark:text-blue-300 text-sm flex items-center justify-between">
+        <div className="p-4 rounded-md bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-900 text-primary-900 dark:text-primary-300 text-sm flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <svg className="w-5 h-5 text-blue-600 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
+            <Icon name="clock" size="sm" className="text-primary-600 shrink-0" aria-hidden="true" />
             <div>
-              <span className="font-semibold">Event is {weeksUntilEvent} weeks away.</span> High lead-time vendors (e.g. venues & catering requiring 12+ weeks) are flagged with warning badges below.
+              <span className="font-semibold">Event is {weeksUntilEvent} weeks away.</span> High lead-time vendors requiring 8+ weeks are flagged below.
             </div>
           </div>
         </div>
@@ -258,44 +254,42 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
 
       {/* Add Vendor Modal */}
       {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/60 backdrop-blur-xs p-4 animate-fade-in">
-          <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold text-slate-900 dark:text-white">Add New Vendor</h3>
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-xs p-4">
+          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-xl max-w-md w-full p-6 space-y-4">
+            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 font-display">Add New Vendor</h3>
             <form onSubmit={handleAddVendor} className="space-y-4">
               <div>
-                <label htmlFor="new-vendor-name" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="new-vendor-name" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Vendor / Service Name *
                 </label>
-                <input
+                <Input
                   id="new-vendor-name"
                   type="text"
                   required
                   value={newName}
                   onChange={(e) => setNewName(e.target.value)}
                   placeholder="e.g., Grand Ballroom Rentals"
-                  className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="new-vendor-category" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="new-vendor-category" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     Category
                   </label>
-                  <input
+                  <Input
                     id="new-vendor-category"
                     type="text"
                     value={newCategory}
                     onChange={(e) => setNewCategory(e.target.value)}
                     placeholder="Venue, Catering, Audio"
-                    className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
                 <div>
-                  <label htmlFor="new-vendor-est-cost" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                  <label htmlFor="new-vendor-est-cost" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                     Estimated Cost ({currency})
                   </label>
-                  <input
+                  <Input
                     id="new-vendor-est-cost"
                     type="number"
                     min="0"
@@ -303,16 +297,15 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                     value={newEstCost}
                     onChange={(e) => setNewEstCost(e.target.value)}
                     placeholder="0.00"
-                    className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="new-vendor-lead-weeks" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="new-vendor-lead-weeks" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Lead Time (Weeks needed to book)
                 </label>
-                <input
+                <Input
                   id="new-vendor-lead-weeks"
                   type="number"
                   min="0"
@@ -320,12 +313,11 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                   value={newLeadWeeks}
                   onChange={(e) => setNewLeadWeeks(e.target.value)}
                   placeholder="e.g., 8"
-                  className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
                 />
               </div>
 
               <div>
-                <label htmlFor="new-vendor-notes" className="block text-xs font-semibold text-slate-700 dark:text-slate-300 mb-1">
+                <label htmlFor="new-vendor-notes" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
                   Notes / Package Info
                 </label>
                 <textarea
@@ -334,24 +326,26 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                   value={newNotes}
                   onChange={(e) => setNewNotes(e.target.value)}
                   placeholder="Includes sound engineer, 4 mics..."
-                  className="w-full text-sm rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-800 px-3 py-2 text-slate-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"
+                  className="w-full text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
                 />
               </div>
 
               <div className="flex justify-end gap-2 pt-2">
-                <button
+                <Button
                   type="button"
+                  variant="secondary"
+                  size="sm"
                   onClick={() => setIsAddOpen(false)}
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 hover:bg-slate-200 dark:hover:bg-slate-700"
                 >
                   Cancel
-                </button>
-                <button
+                </Button>
+                <Button
                   type="submit"
-                  className="px-4 py-2 text-xs font-semibold rounded-lg bg-indigo-600 text-white hover:bg-indigo-500 shadow-xs"
+                  variant="primary"
+                  size="sm"
                 >
                   Add Vendor
-                </button>
+                </Button>
               </div>
             </form>
           </div>
@@ -367,15 +361,15 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
             return (
               <div
                 key={col.id}
-                className="flex flex-col rounded-xl bg-slate-50 dark:bg-slate-900/40 border border-slate-200 dark:border-slate-800 p-3 min-h-[400px]"
+                className="flex flex-col rounded-md bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 p-3 min-h-96"
               >
                 {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-200 dark:border-slate-800">
+                <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200 dark:border-neutral-800">
                   <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-slate-900 dark:text-white">
+                    <span className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
                       {col.label}
                     </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 shadow-2xs">
+                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 tnum">
                       {items.length}
                     </span>
                   </div>
@@ -384,7 +378,7 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                 {/* Cards List */}
                 <div className="space-y-3 flex-1 overflow-y-auto">
                   {items.length === 0 ? (
-                    <div className="text-center py-8 text-xs text-slate-400">
+                    <div className="text-center py-8 text-xs text-neutral-400">
                       No vendors in this stage
                     </div>
                   ) : (
@@ -397,42 +391,38 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                       return (
                         <div
                           key={item.id}
-                          className="p-3 rounded-lg border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs hover:shadow-md transition-shadow space-y-2"
+                          className="p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:shadow-xs transition-shadow space-y-2"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div>
-                              <span className="text-[11px] font-semibold text-indigo-600 dark:text-indigo-400">
+                              <span className="text-xs font-semibold text-primary-600 dark:text-primary-400">
                                 {item.category}
                               </span>
-                              <h4 className="text-sm font-semibold text-slate-900 dark:text-white leading-tight">
+                              <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 leading-tight">
                                 {item.name}
                               </h4>
                             </div>
-                            <button
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              icon="trash"
                               onClick={() => handleDelete(item.id)}
-                              className="text-slate-400 hover:text-rose-600 p-1"
+                              className="text-neutral-400 hover:text-danger hover:bg-danger-surface"
                               aria-label={`Delete ${item.name}`}
-                            >
-                              <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                              </svg>
-                            </button>
+                            />
                           </div>
 
                           {/* Cost & Lead time */}
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-slate-600 dark:text-slate-400">
+                          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
                             {item.estimatedCostMinor !== undefined && (
-                              <span className="font-medium text-slate-800 dark:text-slate-200">
+                              <span className="font-medium text-neutral-800 dark:text-neutral-200 font-mono tnum">
                                 {formatCurrency(item.estimatedCostMinor, currency)}
                               </span>
                             )}
                             {item.leadTimeWeeks !== undefined && (
-                              <span
-                                className={`text-[11px] px-1.5 py-0.5 rounded-sm ${
-                                  isLeadTimeRisk
-                                    ? "bg-rose-100 text-rose-800 dark:bg-rose-950/70 dark:text-rose-300 font-bold"
-                                    : "bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400"
-                                }`}
+                              <Badge
+                                variant={isLeadTimeRisk ? "danger" : "neutral"}
+                                size="sm"
                                 title={
                                   isLeadTimeRisk
                                     ? `Risk: Requires ${item.leadTimeWeeks} weeks lead time, but only ${weeksUntilEvent} weeks remain!`
@@ -440,26 +430,26 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                                 }
                               >
                                 {item.leadTimeWeeks}w lead
-                              </span>
+                              </Badge>
                             )}
                           </div>
 
                           {item.quoteNotes && (
-                            <p className="text-xs text-slate-500 dark:text-slate-400 line-clamp-2">
+                            <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
                               {item.quoteNotes}
                             </p>
                           )}
 
                           {/* Stage Transition Selector */}
-                          <div className="pt-2 border-t border-slate-100 dark:border-slate-800 flex items-center justify-between">
-                            <span className="text-[11px] text-slate-400">Move to:</span>
+                          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
+                            <span className="text-xs text-neutral-400">Move to:</span>
                             <select
                               value={item.status}
                               onChange={(e) =>
                                 handleStatusChange(item.id, e.target.value as VendorItem["status"])
                               }
                               aria-label={`Change stage for ${item.name}`}
-                              className="text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1 text-slate-700 dark:text-slate-300"
+                              className="text-xs rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1 text-neutral-700 dark:text-neutral-300"
                             >
                               {PIPELINE_COLUMNS.map((stage) => (
                                 <option key={stage.id} value={stage.id}>
@@ -479,34 +469,34 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
         </div>
       ) : (
         /* Table View */
-        <div className="overflow-x-auto rounded-xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs">
-          <table className="w-full text-left text-sm">
-            <thead className="bg-slate-50 dark:bg-slate-800/60 text-xs font-semibold text-slate-700 dark:text-slate-300 border-b border-slate-200 dark:border-slate-800">
+        <Surface className="overflow-x-auto">
+          <table className="w-full text-left text-xs" aria-label="Vendors table">
+            <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-xs font-semibold text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-800 uppercase tracking-wider">
               <tr>
-                <th className="px-4 py-3">Vendor / Service</th>
-                <th className="px-4 py-3">Category</th>
-                <th className="px-4 py-3">Stage</th>
-                <th className="px-4 py-3 text-right">Estimated Cost</th>
-                <th className="px-4 py-3 text-right">Actual Cost</th>
-                <th className="px-4 py-3 text-center">Lead Time</th>
-                <th className="px-4 py-3">Notes</th>
-                <th className="px-4 py-3 text-right">Actions</th>
+                <th scope="col" className="px-4 py-3">Vendor / Service</th>
+                <th scope="col" className="px-4 py-3">Category</th>
+                <th scope="col" className="px-4 py-3">Stage</th>
+                <th scope="col" className="px-4 py-3 text-right">Estimated Cost</th>
+                <th scope="col" className="px-4 py-3 text-right">Actual Cost</th>
+                <th scope="col" className="px-4 py-3 text-center">Lead Time</th>
+                <th scope="col" className="px-4 py-3">Notes</th>
+                <th scope="col" className="px-4 py-3 text-right">Actions</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-100 dark:divide-slate-800">
+            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
               {vendors.length === 0 ? (
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-slate-400">
+                  <td colSpan={8} className="px-4 py-8 text-center text-neutral-400">
                     No vendors configured yet.
                   </td>
                 </tr>
               ) : (
                 vendors.map((v) => (
-                  <tr key={v.id} className="hover:bg-slate-50/50 dark:hover:bg-slate-800/30">
-                    <td className="px-4 py-3 font-semibold text-slate-900 dark:text-white">
+                  <tr key={v.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
+                    <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100">
                       {v.name}
                     </td>
-                    <td className="px-4 py-3 text-slate-600 dark:text-slate-400 text-xs">
+                    <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400 text-xs">
                       {v.category}
                     </td>
                     <td className="px-4 py-3">
@@ -516,7 +506,7 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                           handleStatusChange(v.id, e.target.value as VendorItem["status"])
                         }
                         aria-label={`Status for ${v.name}`}
-                        className="text-xs rounded-md border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 px-2 py-1"
+                        className="text-xs rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1"
                       >
                         {PIPELINE_COLUMNS.map((stage) => (
                           <option key={stage.id} value={stage.id}>
@@ -525,39 +515,38 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
                         ))}
                       </select>
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-xs text-neutral-700 dark:text-neutral-300 tnum">
                       {v.estimatedCostMinor !== undefined
                         ? formatCurrency(v.estimatedCostMinor, currency)
                         : "—"}
                     </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-slate-700 dark:text-slate-300">
+                    <td className="px-4 py-3 text-right font-mono text-xs text-neutral-700 dark:text-neutral-300 tnum">
                       {v.actualCostMinor !== undefined
                         ? formatCurrency(v.actualCostMinor, currency)
                         : "—"}
                     </td>
-                    <td className="px-4 py-3 text-center text-xs">
+                    <td className="px-4 py-3 text-center text-xs tnum">
                       {v.leadTimeWeeks !== undefined ? `${v.leadTimeWeeks} wks` : "—"}
                     </td>
-                    <td className="px-4 py-3 text-xs text-slate-500 max-w-xs truncate">
+                    <td className="px-4 py-3 text-xs text-neutral-500 max-w-xs truncate">
                       {v.quoteNotes || "—"}
                     </td>
                     <td className="px-4 py-3 text-right">
-                      <button
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        icon="trash"
                         onClick={() => handleDelete(v.id)}
-                        className="text-slate-400 hover:text-rose-600 p-1"
+                        className="text-neutral-400 hover:text-danger hover:bg-danger-surface"
                         aria-label={`Delete ${v.name}`}
-                      >
-                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                        </svg>
-                      </button>
+                      />
                     </td>
                   </tr>
                 ))
               )}
             </tbody>
           </table>
-        </div>
+        </Surface>
       )}
     </div>
   );

@@ -8,6 +8,7 @@
 
 import React, { useState } from "react";
 import { EventPlan } from "@/domain/types";
+import { Icon, Surface, Badge } from "@/components/ui";
 
 interface BirthdayExtrasProps {
   plan: EventPlan;
@@ -51,54 +52,56 @@ export function BirthdayExtras({ plan }: BirthdayExtrasProps) {
   ];
 
   return (
-    <div className="space-y-8 animate-fade-in">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         {/* Cake Sizing Calculator */}
-        <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-amber-50 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 15.546c-.523 0-1.046.151-1.5.454a2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.704 2.704 0 00-3 0 2.704 2.704 0 01-3 0 2.701 2.701 0 00-1.5-.454M9 6v2m3-2v2m3-2v2M9 3h.01M12 3h.01M15 3h.01M21 21v-7a2 2 0 00-2-2H5a2 2 0 00-2 2v7h18zm-3-9v-2a2 2 0 00-2-2H8a2 2 0 00-2 2v2h10z" />
-              </svg>
+        <Surface className="p-6 space-y-4">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-md bg-warning-surface text-warning">
+              <Icon name="coffee" size="sm" aria-hidden="true" />
             </span>
-            <h3 className="font-bold text-slate-900 dark:text-white">
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">
               Cake Order & Sizing Calculator
             </h3>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
             Automated bakery sizing specification based on your guest count ({guests} guests).
           </p>
 
-          <div className="p-4 rounded-xl bg-amber-50/60 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-900/50 space-y-2">
+          <div className="p-4 rounded-md bg-warning-surface border border-warning space-y-2">
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-amber-800 dark:text-amber-300">Recommended Size:</span>
-              <span className="font-bold text-amber-900 dark:text-amber-200">{cakeInfo.tiers}</span>
+              <span className="font-medium text-warning">Recommended Size:</span>
+              <span className="font-bold text-neutral-900 dark:text-neutral-100">{cakeInfo.tiers}</span>
             </div>
             <div className="flex items-center justify-between text-xs">
-              <span className="font-medium text-amber-800 dark:text-amber-300">Portions / Yield:</span>
-              <span className="font-bold text-amber-900 dark:text-amber-200">{cakeInfo.servings}</span>
+              <span className="font-medium text-warning">Portions / Yield:</span>
+              <span className="font-bold text-neutral-900 dark:text-neutral-100">{cakeInfo.servings}</span>
             </div>
           </div>
 
-          <div className="text-xs text-slate-500 space-y-1">
-            <p>💡 Tip: For outdoor celebrations, avoid delicate buttercream; opt for fondant or ganache.</p>
-            <p>⏰ Order Lead Time: Ensure bakery confirmation at least 3 weeks before event date.</p>
+          <div className="text-xs text-neutral-500 space-y-1">
+            <p className="flex items-center gap-1.5">
+              <Icon name="info" size="xs" aria-hidden="true" />
+              <span>Tip: For outdoor celebrations, avoid delicate buttercream; opt for fondant or ganache.</span>
+            </p>
+            <p className="flex items-center gap-1.5">
+              <Icon name="clock" size="xs" aria-hidden="true" />
+              <span>Order Lead Time: Ensure bakery confirmation at least 3 weeks before event date.</span>
+            </p>
           </div>
-        </div>
+        </Surface>
 
         {/* Energy & Music Curve */}
-        <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-          <div className="flex items-center gap-2">
-            <span className="p-2 rounded-lg bg-indigo-50 text-indigo-700 dark:bg-indigo-950/60 dark:text-indigo-300">
-              <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19V6l12-3v13M9 19c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zm12-3c0 1.105-1.343 2-3 2s-3-.895-3-2 1.343-2 3-2 3 .895 3 2zM9 10l12-3" />
-              </svg>
+        <Surface className="p-6 space-y-4">
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-md bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-300">
+              <Icon name="music" size="sm" aria-hidden="true" />
             </span>
-            <h3 className="font-bold text-slate-900 dark:text-white">
+            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">
               Party Vibe Curve & DJ Cues
             </h3>
           </div>
-          <p className="text-xs text-slate-600 dark:text-slate-400">
+          <p className="text-xs text-neutral-600 dark:text-neutral-400">
             Curate musical tempo progression from guest arrival to peak celebration.
           </p>
 
@@ -108,53 +111,53 @@ export function BirthdayExtras({ plan }: BirthdayExtrasProps) {
                 key={stage.id}
                 type="button"
                 onClick={() => toggleStage(stage.id)}
-                className={`w-full p-2.5 rounded-xl border text-left transition-colors flex items-center justify-between text-xs ${
+                className={`w-full p-2.5 rounded-md border text-left transition-colors flex items-center justify-between text-xs ${
                   stage.completed
-                    ? "bg-indigo-50/50 border-indigo-200 dark:bg-indigo-950/30 dark:border-indigo-900"
-                    : "border-slate-100 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/40"
+                    ? "bg-primary-50/50 border-primary-200 dark:bg-primary-950/30 dark:border-primary-900"
+                    : "border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40"
                 }`}
               >
                 <div>
                   <div className="flex items-center gap-1.5">
                     {stage.completed && (
-                      <span className="text-indigo-600 dark:text-indigo-400 font-bold">✓</span>
+                      <Icon name="check" size="xs" className="text-primary-600 dark:text-primary-400" aria-hidden="true" />
                     )}
-                    <span className="font-semibold text-slate-800 dark:text-slate-200">
+                    <span className="font-semibold text-neutral-800 dark:text-neutral-200">
                       {stage.name}
                     </span>
                   </div>
-                  <div className="text-[11px] text-slate-500">{stage.energy}</div>
+                  <div className="text-xs text-neutral-500">{stage.energy}</div>
                 </div>
-                <span className="font-mono text-indigo-600 dark:text-indigo-400 text-xs font-semibold">
+                <span className="font-mono text-primary-600 dark:text-primary-400 text-xs font-semibold tnum">
                   {stage.bpm}
                 </span>
               </button>
             ))}
           </div>
-        </div>
+        </Surface>
       </div>
 
-      {/* Age Bracket Recommendations */}
-      <div className="p-6 rounded-2xl border border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 shadow-xs space-y-4">
-        <h3 className="text-lg font-bold text-slate-900 dark:text-white">
-          Age-Group Activity & Entertainment Guide
+      {/* Activities by age group */}
+      <Surface className="p-6 space-y-4">
+        <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-100 font-display">
+          Age-Group Activity &amp; Entertainment Guide
         </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {activities.map((act) => (
             <div
               key={act.bracket}
-              className="p-4 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50/50 dark:bg-slate-800/40 space-y-2"
+              className="p-3.5 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-800/40 space-y-1.5 text-xs"
             >
-              <span className="text-xs font-bold text-indigo-600 dark:text-indigo-400">
+              <Badge variant="neutral" size="sm">
                 {act.bracket}
-              </span>
-              <p className="text-xs text-slate-700 dark:text-slate-300 leading-relaxed">
+              </Badge>
+              <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed pt-1">
                 {act.idea}
               </p>
             </div>
           ))}
         </div>
-      </div>
+      </Surface>
     </div>
   );
 }

@@ -13,23 +13,49 @@ import { useRouter } from "next/navigation";
 import { EventProfile } from "@/domain/types";
 import { useGatherlyStore } from "@/store";
 import { ProfileReviewForm } from "./ProfileReviewForm";
+import { Button, Surface, Icon, IconName } from "@/components/ui";
 
-const EXAMPLE_PROMPTS = [
+interface ExamplePrompt {
+  icon: IconName;
+  label: string;
+  text: string;
+}
+
+const EXAMPLE_PROMPTS: ExamplePrompt[] = [
   {
-    emoji: "💍",
+    icon: "wedding",
     label: "120-Guest Wedding",
     text: "Planning a 120-guest multicultural wedding in Chicago next June. Two functions (Ceremony and Reception) with a $35,000 budget. Need accommodation assistance for out-of-town guests.",
   },
   {
-    emoji: "🎂",
+    icon: "birthday",
     label: "7th Birthday Party",
     text: "7th birthday superhero themed party for 25 kids at a local park pavilion next month. $800 budget. Note: peanut allergy considerations and need an entertainer.",
   },
   {
-    emoji: "🌍",
+    icon: "community",
     label: "Community Summer Fair",
     text: "Free neighborhood summer arts fair for 500 attendees in late July. $12,000 budget from municipal grants and local sponsors. Needs city park permit, stage sound system, and 15 volunteers.",
   },
+];
+
+const CURRENCY_OPTIONS = [
+  { value: "USD", label: "USD ($)" },
+  { value: "EUR", label: "EUR (€)" },
+  { value: "GBP", label: "GBP (£)" },
+  { value: "INR", label: "INR (₹)" },
+  { value: "JPY", label: "JPY (¥)" },
+  { value: "CAD", label: "CAD ($)" },
+  { value: "AUD", label: "AUD ($)" },
+];
+
+const LANGUAGE_OPTIONS = [
+  { value: "en", label: "English" },
+  { value: "hi", label: "हिंदी (Hindi)" },
+  { value: "bn", label: "বাংলা (Bengali)" },
+  { value: "es", label: "Español (Spanish)" },
+  { value: "fr", label: "Français (French)" },
+  { value: "de", label: "Deutsch (German)" },
 ];
 
 export function IntakeSection() {
@@ -100,138 +126,131 @@ export function IntakeSection() {
   return (
     <section
       id="intake-section"
-      className="w-full max-w-3xl mx-auto bg-white dark:bg-stone-900 border border-stone-200 dark:border-stone-800 rounded-2xl p-6 sm:p-8 shadow-sm"
+      className="w-full max-w-3xl mx-auto"
       aria-label="Event description intake"
     >
-      <form onSubmit={handleAnalyze} className="space-y-6">
-        <div>
-          <label
-            htmlFor="event-description-input"
-            className="block text-lg font-bold text-stone-900 dark:text-stone-100 mb-2"
-          >
-            Describe your event in your own words
-          </label>
-          <p className="text-sm text-stone-600 dark:text-stone-400 mb-3">
-            Mention the event type, estimated date, location, guest count, or budget. Gatherly extracts everything automatically.
-          </p>
+      <Surface variant="default" className="p-6 sm:p-8">
+        <form onSubmit={handleAnalyze} className="space-y-6">
+          <div>
+            <label
+              htmlFor="event-description-input"
+              className="block text-lg font-bold font-display text-primary mb-1 text-left"
+            >
+              Describe your event in your own words
+            </label>
+            <p className="text-sm text-secondary mb-3 text-left">
+              Mention the event type, estimated date, location, guest count, or budget. Gatherly extracts everything automatically.
+            </p>
 
-          <textarea
-            id="event-description-input"
-            rows={4}
-            value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            maxLength={2000}
-            placeholder="e.g. Planning a 150-guest garden wedding in Napa Valley next October with a $40,000 budget..."
-            className="w-full p-4 rounded-xl border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100 placeholder-stone-400 focus:outline-none focus:ring-2 focus:ring-amber-500 text-base resize-y transition-shadow"
-            required
-            aria-describedby={errorMsg ? "intake-error" : "char-counter"}
-          />
+            <textarea
+              id="event-description-input"
+              rows={4}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              maxLength={2000}
+              placeholder="e.g. Planning a 150-guest garden wedding in Napa Valley next October with a $40,000 budget..."
+              className="w-full p-4 rounded-control border border-border-strong bg-surface text-primary placeholder:text-tertiary focus:outline-none focus:border-primary text-base resize-y transition-colors"
+              required
+              aria-describedby={errorMsg ? "intake-error" : "char-counter"}
+            />
 
-          <div className="flex items-center justify-between text-xs text-stone-500 dark:text-stone-400 mt-1.5 px-1">
-            <span id="char-counter">{description.length} / 2,000 characters</span>
-            <span>All planning data stays in your browser</span>
+            <div className="flex items-center justify-between text-xs text-tertiary mt-1.5 px-1">
+              <span id="char-counter" className="tnum">{description.length} / 2,000 characters</span>
+              <span>All planning data stays in your browser</span>
+            </div>
           </div>
-        </div>
 
-        {/* Example Prompt Chips */}
-        <div>
-          <span className="block text-xs font-semibold uppercase tracking-wider text-stone-500 dark:text-stone-400 mb-2">
-            Or try an example prompt:
-          </span>
-          <div className="flex flex-wrap gap-2">
-            {EXAMPLE_PROMPTS.map((prompt) => (
-              <button
-                key={prompt.label}
-                type="button"
-                onClick={() => setDescription(prompt.text)}
-                className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-stone-100 hover:bg-amber-50 dark:bg-stone-800 dark:hover:bg-amber-950/40 text-stone-800 dark:text-stone-200 border border-stone-200 dark:border-stone-700 hover:border-amber-300 transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500"
+          {/* Example Prompt Chips */}
+          <div className="text-left">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-2">
+              Or try an example prompt:
+            </span>
+            <div className="flex flex-wrap gap-2">
+              {EXAMPLE_PROMPTS.map((prompt) => (
+                <button
+                  key={prompt.label}
+                  type="button"
+                  onClick={() => setDescription(prompt.text)}
+                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-surface-elevated text-secondary border border-border-subtle hover:text-primary hover:border-primary transition-colors cursor-pointer"
+                >
+                  <Icon name={prompt.icon} size={14} aria-hidden />
+                  <span>{prompt.label}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Options: Currency & Output Language */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-border-subtle text-left">
+            <div>
+              <label
+                htmlFor="intake-currency"
+                className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-1.5"
               >
-                <span>{prompt.emoji}</span>
-                <span>{prompt.label}</span>
-              </button>
-            ))}
-          </div>
-        </div>
+                Default Currency
+              </label>
+              <select
+                id="intake-currency"
+                value={currency}
+                onChange={(e) => setCurrency(e.target.value)}
+                className="w-full text-sm px-3 py-2 rounded-control border border-border-strong bg-surface text-primary cursor-pointer focus:outline-none focus:border-primary"
+              >
+                {CURRENCY_OPTIONS.map((c) => (
+                  <option key={c.value} value={c.value}>
+                    {c.label}
+                  </option>
+                ))}
+              </select>
+            </div>
 
-        {/* Options: Currency & Output Language */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2 border-t border-stone-100 dark:border-stone-800">
-          <div>
-            <label
-              htmlFor="intake-currency"
-              className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1"
-            >
-              Default Currency
-            </label>
-            <select
-              id="intake-currency"
-              value={currency}
-              onChange={(e) => setCurrency(e.target.value)}
-              className="w-full text-sm px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100"
-            >
-              <option value="USD">USD ($)</option>
-              <option value="EUR">EUR (€)</option>
-              <option value="GBP">GBP (£)</option>
-              <option value="INR">INR (₹)</option>
-              <option value="JPY">JPY (¥)</option>
-              <option value="CAD">CAD ($)</option>
-              <option value="AUD">AUD ($)</option>
-            </select>
+            <div>
+              <label
+                htmlFor="intake-language"
+                className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-1.5"
+              >
+                Plan Output Language
+              </label>
+              <select
+                id="intake-language"
+                value={language}
+                onChange={(e) => setLanguage(e.target.value)}
+                className="w-full text-sm px-3 py-2 rounded-control border border-border-strong bg-surface text-primary cursor-pointer focus:outline-none focus:border-primary"
+              >
+                {LANGUAGE_OPTIONS.map((l) => (
+                  <option key={l.value} value={l.value}>
+                    {l.label}
+                  </option>
+                ))}
+              </select>
+            </div>
           </div>
 
-          <div>
-            <label
-              htmlFor="intake-language"
-              className="block text-xs font-medium text-stone-700 dark:text-stone-300 mb-1"
+          {errorMsg && (
+            <div
+              id="intake-error"
+              role="alert"
+              className="p-3 bg-status-danger-bg border border-status-danger-border rounded-control text-sm text-status-danger flex items-center gap-2"
             >
-              Plan Output Language
-            </label>
-            <select
-              id="intake-language"
-              value={language}
-              onChange={(e) => setLanguage(e.target.value)}
-              className="w-full text-sm px-3 py-2 rounded-lg border border-stone-300 dark:border-stone-700 bg-stone-50 dark:bg-stone-800 text-stone-900 dark:text-stone-100"
+              <Icon name="alert" size={16} aria-hidden />
+              <span>{errorMsg}</span>
+            </div>
+          )}
+
+          {/* Submit button */}
+          <div className="flex justify-end pt-2">
+            <Button
+              type="submit"
+              variant="primary"
+              size="lg"
+              disabled={isSubmitting || !description.trim()}
+              isLoading={isSubmitting}
+              className="w-full sm:w-auto"
             >
-              <option value="en">English</option>
-              <option value="hi">हिंदी (Hindi)</option>
-              <option value="bn">বাংলা (Bengali)</option>
-              <option value="es">Español (Spanish)</option>
-              <option value="fr">Français (French)</option>
-              <option value="de">Deutsch (German)</option>
-            </select>
+              Continue to profile review
+            </Button>
           </div>
-        </div>
-
-        {errorMsg && (
-          <div
-            id="intake-error"
-            role="alert"
-            className="p-3 bg-red-50 dark:bg-red-950/40 border border-red-200 dark:border-red-800 rounded-lg text-sm text-red-700 dark:text-red-300"
-          >
-            {errorMsg}
-          </div>
-        )}
-
-        {/* Submit button */}
-        <div className="flex justify-end pt-2">
-          <button
-            type="submit"
-            disabled={isSubmitting || !description.trim()}
-            className="w-full sm:w-auto px-8 py-3 rounded-xl bg-amber-600 hover:bg-amber-700 text-white font-semibold shadow-md transition-colors focus:outline-none focus:ring-2 focus:ring-amber-500 focus:ring-offset-2 min-h-[48px] flex items-center justify-center gap-2 disabled:opacity-50"
-          >
-            {isSubmitting ? (
-              <>
-                <svg className="animate-spin h-5 w-5 text-white" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8H4z" />
-                </svg>
-                <span>Analyzing Event...</span>
-              </>
-            ) : (
-              <span>Continue to Profile Review →</span>
-            )}
-          </button>
-        </div>
-      </form>
+        </form>
+      </Surface>
     </section>
   );
 }
