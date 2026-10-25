@@ -129,17 +129,38 @@ export function IntakeSection() {
       className="w-full mx-auto"
       aria-label="Event description intake"
     >
-      <Surface variant="default" className="p-6 sm:p-8 shadow-sm">
+      <Surface variant="default" className="p-6 sm:p-8 rounded-surface border border-border-strong bg-surface/95 backdrop-blur-xl shadow-lg">
         <form onSubmit={handleAnalyze} className="flex flex-col gap-6">
+          {/* Studio Console Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border-subtle gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="p-2 rounded-control bg-primary-subtle text-brand flex items-center justify-center">
+                <Icon name="sparkles" size={16} aria-hidden />
+              </div>
+              <div>
+                <span className="text-xs font-bold uppercase tracking-wider text-primary block">
+                  AI Event Architecture Console
+                </span>
+                <span className="text-xs text-tertiary">
+                  Natural-language parsing with deterministic domain engine allocation
+                </span>
+              </div>
+            </div>
+            <div className="flex items-center gap-1.5 text-xs text-tertiary">
+              <Icon name="shield" size={13} className="text-status-success" aria-hidden />
+              <span>100% In-Browser Privacy</span>
+            </div>
+          </div>
+
           <div>
             <label
               htmlFor="event-description-input"
-              className="block text-lg font-bold font-display text-primary mb-1 text-left"
+              className="block text-xl font-bold font-display text-primary mb-1.5 text-left tracking-tight"
             >
               Describe your event in your own words
             </label>
             <p className="text-sm text-secondary mb-3 text-left">
-              Mention the event type, estimated date, location, guest count, or budget. Gatherly extracts everything automatically.
+              Mention the event type, estimated date, location, guest count, or budget. Gatherly structures everything automatically.
             </p>
 
             <textarea
@@ -148,32 +169,35 @@ export function IntakeSection() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={2000}
-              placeholder="e.g. Planning a 150-guest wedding in Bengaluru next November with a ₹25,00,000 budget..."
-              className="w-full p-4 rounded-control border border-border-strong bg-surface text-primary placeholder:text-tertiary focus:outline-none focus:border-primary text-base resize-y transition-colors"
+              placeholder="e.g. Planning a 120-guest wedding in Bengaluru next November with a ₹25,00,000 budget..."
+              className="w-full p-4 rounded-control border border-border-strong bg-surface-elevated/70 text-primary placeholder:text-tertiary focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary text-base resize-y transition-colors leading-relaxed"
               required
               aria-describedby={errorMsg ? "intake-error" : "char-counter"}
             />
 
-            <div className="flex items-center justify-between text-xs text-tertiary mt-1.5 px-1">
-              <span id="char-counter" className="tnum">{description.length} / 2,000 characters</span>
-              <span>All planning data stays in your browser</span>
+            <div className="flex items-center justify-between text-xs text-tertiary mt-2 px-1">
+              <span id="char-counter" className="tnum font-medium">{description.length} / 2,000 characters</span>
+              <span className="flex items-center gap-1.5">
+                <Icon name="shield" size={13} aria-hidden />
+                <span>All planning data stays in your browser</span>
+              </span>
             </div>
           </div>
 
           {/* Example Prompt Chips */}
           <div className="text-left">
-            <span className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-2">
+            <span className="block text-xs font-semibold uppercase tracking-wider text-secondary mb-2.5">
               Or try an example prompt:
             </span>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-2.5">
               {EXAMPLE_PROMPTS.map((prompt) => (
                 <button
                   key={prompt.label}
                   type="button"
                   onClick={() => setDescription(prompt.text)}
-                  className="inline-flex items-center gap-1.5 text-xs font-medium px-3 py-1.5 rounded-full bg-surface-elevated text-secondary border border-border-subtle hover:text-primary hover:border-primary transition-colors cursor-pointer"
+                  className="inline-flex items-center gap-2 text-xs font-medium px-4 py-2 rounded-full bg-surface-elevated/80 text-secondary border border-border-strong hover:text-primary hover:border-primary hover:bg-surface-elevated transition-all cursor-pointer shadow-2xs"
                 >
-                  <Icon name={prompt.icon} size={14} aria-hidden />
+                  <Icon name={prompt.icon} size={14} className="text-brand" aria-hidden />
                   <span>{prompt.label}</span>
                 </button>
               ))}
@@ -193,7 +217,7 @@ export function IntakeSection() {
                 id="intake-currency"
                 value={currency}
                 onChange={(e) => setCurrency(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-control border border-border-strong bg-surface text-primary cursor-pointer focus:outline-none focus:border-primary"
+                className="w-full text-sm px-3.5 py-2.5 rounded-control border border-border-strong bg-surface-elevated/70 text-primary cursor-pointer focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 {CURRENCY_OPTIONS.map((c) => (
                   <option key={c.value} value={c.value}>
@@ -214,7 +238,7 @@ export function IntakeSection() {
                 id="intake-language"
                 value={language}
                 onChange={(e) => setLanguage(e.target.value)}
-                className="w-full text-sm px-3 py-2 rounded-control border border-border-strong bg-surface text-primary cursor-pointer focus:outline-none focus:border-primary"
+                className="w-full text-sm px-3.5 py-2.5 rounded-control border border-border-strong bg-surface-elevated/70 text-primary cursor-pointer focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary"
               >
                 {LANGUAGE_OPTIONS.map((l) => (
                   <option key={l.value} value={l.value}>
@@ -229,7 +253,7 @@ export function IntakeSection() {
             <div
               id="intake-error"
               role="alert"
-              className="p-3 bg-status-danger-bg border border-status-danger-border rounded-control text-sm text-status-danger flex items-center gap-2"
+              className="p-3.5 bg-status-danger-bg border border-status-danger-border rounded-control text-sm text-status-danger flex items-center gap-2"
             >
               <Icon name="alert" size={16} aria-hidden />
               <span>{errorMsg}</span>
@@ -237,14 +261,15 @@ export function IntakeSection() {
           )}
 
           {/* Submit button */}
-          <div className="flex justify-end pt-4 border-t border-border-subtle">
+          <div className="flex justify-end pt-5 border-t border-border-subtle">
             <Button
               type="submit"
               variant="primary"
               size="lg"
               disabled={isSubmitting || !description.trim()}
               isLoading={isSubmitting}
-              className="w-full sm:w-auto"
+              rightIcon="arrow-right"
+              className="w-full sm:w-auto shadow-md shadow-primary/20 font-semibold px-8 py-3"
             >
               Continue to profile review
             </Button>

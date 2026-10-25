@@ -13,13 +13,13 @@ import { AccessibilityToolbar } from "@/components/AccessibilityToolbar";
 const bricolage = Bricolage_Grotesque({
   subsets: ["latin", "latin-ext"],
   display: "swap",
-  variable: "--font-display",
+  variable: "--font-bricolage",
 });
 
 const instrument = Instrument_Sans({
   subsets: ["latin", "latin-ext"],
   display: "swap",
-  variable: "--font-body",
+  variable: "--font-instrument",
 });
 
 const notoSans = Noto_Sans({

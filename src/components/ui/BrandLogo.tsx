@@ -1,6 +1,4 @@
-"use client";
-
-import React, { useEffect, useState } from "react";
+import React from "react";
 import Link from "next/link";
 
 interface BrandLogoProps {
@@ -20,54 +18,22 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
   size = "md",
   href = "/",
 }) => {
-  const [theme, setTheme] = useState<"light" | "dark" | "system">("system");
-
-  useEffect(() => {
-    const checkTheme = () => {
-      const currentTheme = document.documentElement.getAttribute("data-theme");
-      if (currentTheme === "dark") setTheme("dark");
-      else if (currentTheme === "light") setTheme("light");
-      else setTheme("system");
-    };
-
-    checkTheme();
-
-    const observer = new MutationObserver(checkTheme);
-    observer.observe(document.documentElement, {
-      attributes: true,
-      attributeFilter: ["data-theme"],
-    });
-
-    return () => observer.disconnect();
-  }, []);
-
-  const logoSrc =
-    theme === "dark"
-      ? "/logo-dark.png"
-      : theme === "light"
-      ? "/logo.png"
-      : undefined;
-
   const content = (
-    <div className={`inline-flex items-center gap-2 select-none ${className}`}>
-      {logoSrc ? (
-        /* eslint-disable-next-line @next/next/no-img-element */
-        <img
-          src={logoSrc}
-          alt="Gatherly Logo"
-          className={`${heightClasses[size]} w-auto object-contain`}
-        />
-      ) : (
-        <picture>
-          <source srcSet="/logo-dark.png" media="(prefers-color-scheme: dark)" />
-          {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img
-            src="/logo.png"
-            alt="Gatherly Logo"
-            className={`${heightClasses[size]} w-auto object-contain`}
-          />
-        </picture>
-      )}
+    <div className={`inline-flex items-center select-none ${className}`}>
+      {/* Light theme logo: displays on light background */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo.png"
+        alt="Gatherly"
+        className={`brand-logo-light ${heightClasses[size]} w-auto object-contain`}
+      />
+      {/* Dark theme logo: displays on dark background */}
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src="/logo-dark.png"
+        alt="Gatherly"
+        className={`brand-logo-dark ${heightClasses[size]} w-auto object-contain`}
+      />
     </div>
   );
 
@@ -85,3 +51,4 @@ export const BrandLogo: React.FC<BrandLogoProps> = ({
 
   return content;
 };
+
