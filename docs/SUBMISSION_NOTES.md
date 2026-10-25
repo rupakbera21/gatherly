@@ -4,7 +4,7 @@
 
 **Gatherly** is an AI-powered event planning assistant built from the ground up to solve the real-world friction of planning weddings, birthdays, and community gatherings. Rather than treating Generative AI as a brittle magic wand that directly controls application state, Gatherly employs an **Audited Co-Planner Architecture**:
 1. **AI Proposes, Domain Engines Validate, Humans Approve:** LLMs provide creative suggestions, categorization, and draft timelines. Domain engines strictly govern financial math, DAG topological ordering, and calendar formatting. The human organizer retains ultimate control via interactive diff previews and one-click undo/redo.
-2. **True High-Availability Failure Ladder:** Primary AI calls go to Google Gemini 2.5 Flash, automatically failing over to GroqCloud if the primary hits rate limits, and smoothly degrading to deterministic rule-based baselines if both AI providers are unavailable.
+2. **True High-Availability Failure Ladder:** Primary AI calls go to Google Gemini 3.5 Flash (default: `gemini-3.5-flash`), automatically failing over to GroqCloud (default: `qwen/qwen3.8-27b`) if the primary hits rate limits or model/permission errors (403/404), and smoothly degrading to deterministic rule-based baselines if both AI providers are unavailable.
 3. **Privacy-by-Design:** All plan state is persisted locally in the user's browser via Zustand and `localStorage`. No user accounts, database backends, analytics pixels, or third-party tracking cookies exist. Sensitive guest PII is never transmitted to LLMs.
 
 ---
@@ -40,7 +40,7 @@ Event planning is fundamentally backward planning from the target date:
 
 ## 3. Measured Performance & Verification Metrics
 
-- **Test Suite:** 223 passed tests across 30 suites (`npm test` executes in ~6.1 seconds).
+- **Test Suite:** 230 passed tests across 31 suites (`npm test` executes in ~6.5 seconds).
 - **TypeScript & Linting:** 100% clean check with `noUncheckedIndexedAccess: true` and ESLint 9.
 - **Production Build:** Next.js 16.4.2 with Turbopack, Cache Components, and Partial Prerendering (PPR) enabled.
 - **Bundle & Repository Size:**
@@ -64,7 +64,7 @@ Event planning is fundamentally backward planning from the target date:
 ## 5. Verification Commands
 
 ```bash
-# 1. Run full verification suite (lint + typecheck + 223 coverage-enforced tests + Next.js 16 build)
+# 1. Run full verification suite (lint + typecheck + 230 coverage-enforced tests + Next.js 16 build)
 npm run verify
 
 # 2. Run unit and integration tests with coverage

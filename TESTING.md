@@ -1,7 +1,7 @@
 # Gatherly – Verification & Test Suite Documentation
 
-> **Test Status:** 30 Test Suites Passed | 223 Tests Passed | 0 Snapshots | 100% Pass Rate  
-> **Execution Duration:** ~6.1s (local standard) / ~25s (with concurrency stress tests)
+> **Test Status:** 31 Test Suites Passed | 230 Tests Passed | 0 Snapshots | 100% Pass Rate  
+> **Execution Duration:** ~6.5s (local standard) / ~25s (with concurrency stress tests)
 
 ---
 
@@ -20,7 +20,7 @@ All test suites and test counts below are directly generated and verified from t
 | 7 | **Accessibility Toolbar** | `src/__tests__/unit/toolbar-a11y.test.tsx` | 6 | High contrast, dyslexia font, theme toggle, text scaling, zero axe violations |
 | 8 | **Money & Allocation** | `src/__tests__/unit/money.test.ts` | 9 | Integer minor units, currency formatting, Hare-Niemeyer largest-remainder allocation, sum invariance |
 | 9 | **Environment Validator** | `src/__tests__/unit/env.test.ts` | 8 | Required vs optional env vars, whitespace and quote stripping, build commit injection |
-| 10 | **Gemini Provider Adapter** | `src/__tests__/unit/gemini.test.ts` | 10 | Structured JSON, streaming parse, 400 invalid key, 429 quota, 503 retry, timeout, secret key redaction |
+| 10 | **Gemini Provider Adapter** | `src/__tests__/unit/gemini.test.ts` | 12 | Structured JSON, streaming parse, 400 invalid key, 403 forbidden, 404 not found, 429 quota, 503 retry, timeout, secret key redaction |
 | 11 | **RFC 4180 CSV Engine** | `src/__tests__/unit/csv.test.ts` | 5 | Quoting, escaping, formula injection neutralization (`=`, `+`, `-`, `@`, `\t` prefixed with `'`) |
 | 12 | **Concurrency Stress Test** | `src/__tests__/integration/concurrency.test.ts` | 4 | 50 concurrent coalesced + 50 distinct requests, concurrency cap enforcement (peak in-flight ≤ 4), inFlight map drain to 0, LRU cache bounded to 50, and negative assertion proofs |
 | 13 | **RFC 5545 iCalendar Engine** | `src/__tests__/unit/ics.test.ts` | 4 | CRLF line terminators, 75-octet UTF-8 line folding, character escaping, `VALUE=DATE` formatting |
@@ -40,9 +40,9 @@ All test suites and test counts below are directly generated and verified from t
 | 27 | **State Patches Core** | `src/__tests__/unit/patches.test.ts` | 6 | Pure reducer `applyPatch`, inverse patch computation for undo/redo (`invertPatch`), human diffs |
 | 28 | **Health Verification Route** | `src/__tests__/unit/health.test.ts` | 4 | GET /api/health deploy verification, secret redaction, Upstash ping, rate limiting |
 | 29 | **AI Circuit Breaker** | `src/__tests__/unit/circuit-breaker.test.ts` | 4 | In-memory trip, check, expiry, reset, Redis distributed state sync and error tolerance |
-| 30 | **AI Orchestrator** | `src/__tests__/unit/orchestrator.test.ts` | 7 | Primary provider success, quota error immediate failover, backoff retries, schema repair, coalescing |
+| 30 | **AI Orchestrator** | `src/__tests__/unit/orchestrator.test.ts` | 8 | Primary provider success, quota/403/404 error immediate failover to Groq, backoff retries, schema repair, coalescing |
 | 31 | **Announce Accessibility Utility** | `src/__tests__/unit/announce.test.ts` | 2 | Accessible polite live-region announcements, timeout debounce, and missing DOM node fallback |
-| **Total** | **31 Suites** | | **227** | **All 227 Tests Passing (100% Pass Rate)** |
+| **Total** | **31 Suites** | | **230** | **All 230 Tests Passing (100% Pass Rate)** |
 
 ---
 
@@ -58,9 +58,11 @@ npm test
 npm run test:coverage
 ```
 Coverage thresholds enforced & verified:
-- `src/domain/`: 94.72% lines (threshold: ≥85%) - **PASS**
+- `src/domain/`: 94.89% lines (threshold: ≥85%) - **PASS**
 - `src/services/`: 93.84% lines (threshold: ≥85%) - **PASS**
-- Overall application: 89.41% lines (threshold: ≥70%) - **PASS**
+- `src/services/ai/`: 88.38% lines (threshold: ≥85%) - **PASS**
+- `src/app/api/`: 87.94% lines aggregate (threshold: ≥85%) - **PASS**
+- Overall application: 89.48% lines (threshold: ≥70%) - **PASS**
 
 ### Run Full Gate Verification
 Runs ESLint 9, TypeScript compiler (`tsc --noEmit`), Jest test suite, and Next.js 16 production build:

@@ -103,6 +103,18 @@ Dependency direction flows downward only:
 - **Error responses:** typed codes; never leak stack traces, provider messages, or keys
 - **ICS/CSV escaping:** RFC 5545 CRLF, formula injection neutralisation
 
+### Content Security Policy (CSP) & Trade-offs
+
+- **Directive:** `script-src 'self' 'unsafe-inline'`
+- **Why Next.js needs `'unsafe-inline'`:** Next.js App Router relies on small inline bootstrap scripts to inject initial React Server Component (RSC) payloads, handle progressive hydration chunks, and initialize client-side streaming before external JavaScript bundles execute.
+- **What mitigates it:**
+  - `connect-src 'self'`: Outbound network requests are locked down strictly to the application origin. All LLM calls (Gemini, Groq) and database operations execute exclusively on the server (`/api/*`), preventing exfiltration of sensitive state to external origins even if an inline script were injected.
+  - `default-src 'self'`, `object-src 'none'`, `frame-ancestors 'none'`, `base-uri 'self'`, `form-action 'self'`.
+  - Zero user HTML injection: React JSX escapes user-rendered content by default, and no `dangerouslySetInnerHTML` is used anywhere in the codebase.
+  - Zero third-party scripts, tracking pixels, or external CDNs are loaded.
+  - Client state contains no session tokens, passwords, or authentication cookies.
+- **Upgrade Path:** A per-request nonce-based CSP (`'nonce-{random}'`) generated in Next.js Edge Middleware via `crypto.randomUUID()` and forwarded to `<Script nonce={...}>` components, allowing complete removal of `'unsafe-inline'` when migrating from static export/caching to full middleware-driven runtime headers.
+
 See [docs/adr/](./docs/adr/) for decision records.
 
 ### npm audit
@@ -132,7 +144,7 @@ See concurrency test: `src/__tests__/integration/concurrency.test.ts`
 | Metric | Measured Value | Standard / Limit |
 |---|---|---|
 | **Non-Build Repo Footprint** | **1.07 MB** | < 10 MB strict limit |
-| **Automated Test Suite** | **227 passed / 227 total** across 31 suites | 100% pass rate in ~6.5s |
+| **Automated Test Suite** | **230 passed / 230 total** across 31 suites | 100% pass rate in ~6.5s |
 | **Next.js 16 Build Status** | **23/23 routes compiled** (Static & Partial Prerender) | Turbopack zero-error build |
 | **Accessibility Audit** | **0 violations** (`jest-axe` automated suite) | WCAG 2.2 AA compliant |
 | **Budget Sandbox Latency** | **< 1 ms** (pure client-side integer math) | Zero-LLM what-if rebalancing |

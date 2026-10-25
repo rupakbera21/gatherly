@@ -126,19 +126,29 @@ export class GeminiProvider implements LLMProvider {
         });
       }
 
-      // Quota / Credit exhaustion detection
-      const isQuota =
+      // Quota / Credit / Model unavailable (404) / Permission (403) exhaustion detection
+      const isQuotaOrUnavailable =
         msg.includes("RESOURCE_EXHAUSTED") ||
         msg.includes("quota") ||
         msg.includes("credit") ||
         msg.includes("billing") ||
-        msg.includes("limit: 0");
+        msg.includes("limit: 0") ||
+        msg.includes("404") ||
+        msg.includes("not found") ||
+        msg.includes("not available") ||
+        msg.includes("403") ||
+        msg.includes("PERMISSION_DENIED") ||
+        msg.includes("permission");
 
-      if (isQuota) {
+      if (isQuotaOrUnavailable) {
+        const statusCode =
+          msg.includes("404") || msg.includes("not found") ? 404 :
+          msg.includes("403") || msg.includes("PERMISSION_DENIED") ? 403 : 429;
+
         throw this.buildError({
           type: "quota",
-          statusCode: 429,
-          message: `Gemini quota exhausted: ${msg}`,
+          statusCode,
+          message: `Gemini quota/unavailable: ${msg}`,
           retryable: false,
         });
       }

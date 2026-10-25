@@ -47,10 +47,10 @@ This document maps every challenge criterion and user requirement directly to it
 - **AI Failure Ladder (`src/services/ai/orchestrator.ts`):**
   1. *Request Coalescing:* In-flight duplicate requests share a single pending Promise (proven in `concurrency.test.ts`).
   2. *Tiered LRU Cache:* 50-entry in-memory cache keyed by SHA-256 hash of inputs.
-  3. *Primary Provider:* Google Gemini 2.5 Flash via REST API.
-  4. *Circuit Breaker (`src/services/ai/circuit-breaker.ts`):* Upstash Redis backed, fails open to local memory. Trips on quota exhaustion (`RESOURCE_EXHAUSTED` / 429) or consecutive failures for 60 seconds.
+  3. *Primary Provider:* Google Gemini 3.5 Flash via REST API (default: `gemini-3.5-flash`).
+  4. *Circuit Breaker (`src/services/ai/circuit-breaker.ts`):* Upstash Redis backed, fails open to local memory. Trips on quota exhaustion (`RESOURCE_EXHAUSTED` / 429), model/permission errors (403/404), or consecutive failures for 60 seconds.
   5. *Automatic Retry & Schema Repair:* 2 transient retries with exponential backoff; 1 schema-repair prompt retry.
-  6. *Secondary Fallback:* GroqCloud (e.g. Qwen 2.5 / Llama 3).
+  6. *Secondary Fallback:* GroqCloud via REST API (default: `qwen/qwen3.8-27b`).
   7. *Degraded Baseline Mode (`src/domain/baseline.ts`):* If both AI providers fail, returns deterministic, mathematically verified baseline plans. No production code path ever crashes or returns raw errors to users.
 
 ---
@@ -94,10 +94,10 @@ This document maps every challenge criterion and user requirement directly to it
 
 | Suite Category | File | Count | Highlights |
 |---|---|---|---|
-| Domain Unit Tests | `money.test.ts`, `allocation.test.ts`, `dates.test.ts`, `timeline.test.ts`, `baseline.test.ts`, `ics.test.ts`, `csv.test.ts`, `dedupe.test.ts`, `patches.test.ts`, `hash.test.ts` | 68 tests | Exact integer pennies, Hare-Niemeyer remainders, DFS cycle detection, RFC 5545 & 4180 escaping, patch invertibility |
-| Store Unit Tests | `store.test.ts` | 7 tests | Zustand rehydration, multi-event mutations, undo/redo stack, 512KB import cap |
-| AI Unit Tests | `orchestrator.test.ts`, `groq.test.ts` | 13 tests | Circuit breaker trip/bypass, fallback to Groq, degraded baseline fallback, retry logic, request coalescing, Groq adapter auth & SSE streaming |
-| UI & A11y Tests | `extras.test.tsx` | 3 tests | `jest-axe` accessibility scans on Wedding, Birthday, Community modules with 0 violations |
-| Concurrency Stress Tests | `concurrency.test.ts` | 2 tests | 50 concurrent identical requests coalesce to 1 call; 50 concurrent distinct requests run leak-free |
-| Integration Tests | `tier1.test.ts`, `tier2.test.ts` | 25 tests | End-to-end API route testing (`/api/intake`, `/api/budget`, `/api/timeline`, `/api/vendors`, `/api/ideas`, `/api/copilot`, `/api/quote`, `/api/run-of-show`) |
-| **Total Verified** | **19 test suites** | **117 tests** | **100% Passing** in ~5.7s |
+| Domain Unit Tests | `money.test.ts`, `allocation.test.ts`, `dates.test.ts`, `timeline.test.ts`, `baseline.test.ts`, `ics.test.ts`, `csv.test.ts`, `dedupe.test.ts`, `patches.test.ts`, `patches-extended.test.ts`, `hash.test.ts` | 80 tests | Exact integer pennies, Hare-Niemeyer remainders, DFS cycle detection, RFC 5545 & 4180 escaping, patch invertibility |
+| Store Unit Tests | `store.test.ts` | 6 tests | Zustand rehydration, multi-event mutations, undo/redo stack, 512KB import cap, privacy wipe |
+| AI & Service Unit Tests | `gemini.test.ts`, `groq.test.ts`, `orchestrator.test.ts`, `circuit-breaker.test.ts`, `cleaner.test.ts`, `ratelimit.test.ts`, `env.test.ts`, `logger.test.ts`, `http.test.ts`, `health.test.ts` | 87 tests | 403/404/429 failover to Groq, circuit breaker trip/bypass, schema repair, prompt cleaning, 32KB body limiting, deploy health verification |
+| UI & A11y Tests | `extras.test.tsx`, `review-form-a11y.test.tsx`, `copilot-a11y.test.tsx`, `intake-a11y.test.tsx`, `toolbar-a11y.test.tsx`, `announce.test.ts` | 34 tests | `jest-axe` automated accessibility scans across all modules with 0 violations, live regions, focus trapping |
+| Concurrency Stress Tests | `concurrency.test.ts` | 4 tests | 50 concurrent coalesced + 50 distinct requests, concurrency cap enforcement (peak in-flight ≤ 4), inFlight map drain, bounded LRU cache |
+| Integration Tests | `routes.test.ts`, `tier2.test.ts`, `intake.test.ts` | 22 tests | End-to-end API route testing (`/api/intake`, `/api/budget`, `/api/timeline`, `/api/vendors`, `/api/ideas`, `/api/copilot`, `/api/quote`, `/api/run-of-show`) |
+| **Total Verified** | **31 test suites** | **230 tests** | **100% Passing** in ~6.5s |

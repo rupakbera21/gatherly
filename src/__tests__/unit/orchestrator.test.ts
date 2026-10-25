@@ -276,4 +276,37 @@ describe("AI Orchestrator Unit Tests", () => {
     // Coalesced to exactly 1 provider call
     expect(geminiCalls).toBe(1);
   });
+
+  it("8. Gemini 404 (model not found) or 403 falls through to Groq like a quota error", async () => {
+    const fakeGemini404 = new FakeProvider("gemini", async () => {
+      throw createErrorWithDetails({
+        type: "quota",
+        provider: "gemini",
+        statusCode: 404,
+        message: "Gemini quota/unavailable: 404 Not Found: model is no longer available",
+        retryable: false,
+      });
+    });
+
+    const fakeGroq = new FakeProvider("groq", async () => ({
+      message: "Recovered via Groq fallback",
+    }));
+
+    const orchestrator = new AIOrchestrator({
+      primaryProvider: fakeGemini404,
+      fallbackProvider: fakeGroq,
+      enableCache: false,
+    });
+
+    const result = await orchestrator.execute({
+      task: "test-404-fallback",
+      schema: SimpleSchema,
+      prompt: { systemPrompt: "sys", userPrompt: "user" },
+    });
+
+    expect(result.provider).toBe("groq");
+    expect(result.data.message).toBe("Recovered via Groq fallback");
+    expect(fakeGemini404.callCount).toBe(1);
+    expect(fakeGroq.callCount).toBe(1);
+  });
 });

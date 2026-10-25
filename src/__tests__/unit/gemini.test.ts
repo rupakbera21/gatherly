@@ -227,4 +227,40 @@ describe("GeminiProvider Unit Tests", () => {
       expect(details.message).toContain("GEMINI_API_KEY is not configured");
     }
   });
+
+  it("11. classifies 404 (model not found / not available) as non-retryable quota error", async () => {
+    mockGenerateContent.mockRejectedValueOnce(
+      new Error("404 Not Found: models/gemini-2.5-flash is no longer available to new users")
+    );
+
+    const provider = new GeminiProvider();
+    try {
+      await provider.generateStructured("test", TestSchema, { systemPrompt: "sys", userPrompt: "user" });
+      fail("Expected throw");
+    } catch (err: unknown) {
+      const details = getAiDetails(err);
+      expect(details.type).toBe("quota");
+      expect(details.retryable).toBe(false);
+      expect(details.statusCode).toBe(404);
+      expect(details.message).toContain("quota/unavailable");
+    }
+  });
+
+  it("12. classifies 403 (PERMISSION_DENIED) as non-retryable quota error", async () => {
+    mockGenerateContent.mockRejectedValueOnce(
+      new Error("403 Forbidden: PERMISSION_DENIED: The caller does not have permission")
+    );
+
+    const provider = new GeminiProvider();
+    try {
+      await provider.generateStructured("test", TestSchema, { systemPrompt: "sys", userPrompt: "user" });
+      fail("Expected throw");
+    } catch (err: unknown) {
+      const details = getAiDetails(err);
+      expect(details.type).toBe("quota");
+      expect(details.retryable).toBe(false);
+      expect(details.statusCode).toBe(403);
+      expect(details.message).toContain("quota/unavailable");
+    }
+  });
 });
