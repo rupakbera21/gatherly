@@ -14,7 +14,7 @@
   --bg-surface-elevated: #f1f5f9;
 
   /* ---- Text & Typography ---- */
-  --text-primary: #0f172a;
+  --text-primary: #0a0f29;
   --text-secondary: #475569;
   --text-tertiary: #64748b;
   --text-inverse: #ffffff;
@@ -23,9 +23,9 @@
   --border-subtle: #e2e8f0;
   --border-strong: #cbd5e1;
 
-  /* ---- Single Confident Primary (Cobalt Ultramarine) ---- */
-  --primary: #1d4ed8;
-  --primary-hover: #1e40af;
+  /* ---- Single Confident Primary (Logo Brand Electric Cobalt) ---- */
+  --primary: #0052ff;
+  --primary-hover: #0041cc;
   --primary-fg: #ffffff;
   --primary-subtle: #eff6ff;
 
@@ -101,22 +101,22 @@
 /* ---- Dark Mode ---- */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme="light"]) {
-    --bg-canvas: #090d16;
-    --bg-surface: #0f172a;
-    --bg-surface-elevated: #1e293b;
+    --bg-canvas: #070b19;
+    --bg-surface: #0e1530;
+    --bg-surface-elevated: #162044;
 
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
     --text-tertiary: #94a3b8;
-    --text-inverse: #090d16;
+    --text-inverse: #070b19;
 
-    --border-subtle: #1e293b;
-    --border-strong: #334155;
+    --border-subtle: #1c2752;
+    --border-strong: #2c3c78;
 
-    --primary: #2563eb;
-    --primary-hover: #1d4ed8;
+    --primary: #0052ff;
+    --primary-hover: #2563eb;
     --primary-fg: #ffffff;
-    --primary-subtle: #1e293b;
+    --primary-subtle: #162044;
 
     --tint-wedding: #f472b6;
     --tint-wedding-bg: #83184322;
@@ -151,22 +151,22 @@
 }
 
 [data-theme="dark"] {
-  --bg-canvas: #090d16;
-  --bg-surface: #0f172a;
-  --bg-surface-elevated: #1e293b;
+  --bg-canvas: #070b19;
+  --bg-surface: #0e1530;
+  --bg-surface-elevated: #162044;
 
   --text-primary: #f8fafc;
   --text-secondary: #cbd5e1;
   --text-tertiary: #94a3b8;
-  --text-inverse: #090d16;
+  --text-inverse: #070b19;
 
-  --border-subtle: #1e293b;
-  --border-strong: #334155;
+  --border-subtle: #1c2752;
+  --border-strong: #2c3c78;
 
-  --primary: #2563eb;
-  --primary-hover: #1d4ed8;
+  --primary: #0052ff;
+  --primary-hover: #2563eb;
   --primary-fg: #ffffff;
-  --primary-subtle: #1e293b;
+  --primary-subtle: #162044;
 
   --tint-wedding: #f472b6;
   --tint-wedding-bg: #83184322;

@@ -15,7 +15,7 @@ import { usePathname } from "next/navigation";
 import { CopilotDrawer } from "@/components/copilot/CopilotDrawer";
 import { daysBetween, defaultClock } from "@/domain/dates";
 import { useGatherlyStore } from "@/store";
-import { Button, Icon, Badge } from "@/components/ui";
+import { Button, Icon, Badge, BrandLogo } from "@/components/ui";
 
 interface PlanLayoutProps {
   children: React.ReactNode;
@@ -84,18 +84,7 @@ function PlanLayoutInner({ children, params }: PlanLayoutProps) {
         <div className="border-b border-border-subtle">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Link
-                href="/"
-                className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-control"
-                aria-label="Gatherly Home"
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src="/logo.png"
-                  alt="Gatherly Logo"
-                  className="h-7 w-auto object-contain"
-                />
-              </Link>
+              <BrandLogo size="sm" />
               <span className="text-tertiary" aria-hidden="true">/</span>
               <Link
                 href="/events"

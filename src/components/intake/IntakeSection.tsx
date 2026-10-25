@@ -126,11 +126,11 @@ export function IntakeSection() {
   return (
     <section
       id="intake-section"
-      className="w-full max-w-3xl mx-auto"
+      className="w-full mx-auto"
       aria-label="Event description intake"
     >
-      <Surface variant="default" className="p-6 sm:p-8">
-        <form onSubmit={handleAnalyze} className="space-y-6">
+      <Surface variant="default" className="p-6 sm:p-8 shadow-sm">
+        <form onSubmit={handleAnalyze} className="flex flex-col gap-6">
           <div>
             <label
               htmlFor="event-description-input"
@@ -237,7 +237,7 @@ export function IntakeSection() {
           )}
 
           {/* Submit button */}
-          <div className="flex justify-end pt-2">
+          <div className="flex justify-end pt-4 border-t border-border-subtle">
             <Button
               type="submit"
               variant="primary"

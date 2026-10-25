@@ -8,7 +8,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { IntakeSection } from "@/components/intake/IntakeSection";
-import { Icon, Badge } from "@/components/ui";
+import { Icon, Badge, BrandLogo } from "@/components/ui";
 
 export const metadata: Metadata = {
   title: "Gatherly – Turn Event Ideas Into Clear Operational Plans",
@@ -20,20 +20,9 @@ export default function HomePage() {
   return (
     <main id="main-content" tabIndex={-1} className="min-h-screen bg-canvas text-primary">
       {/* Top Application Header */}
-      <header className="w-full border-b border-border-subtle bg-surface sticky top-0 z-30 shadow-xs">
+      <header className="w-full border-b border-border-subtle bg-surface/90 backdrop-blur-md sticky top-0 z-30 shadow-xs">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
-          <Link
-            href="/"
-            className="flex items-center gap-3 no-underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-control"
-            aria-label="Gatherly Home"
-          >
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src="/logo.png"
-              alt="Gatherly Logo"
-              className="h-8 sm:h-9 w-auto object-contain"
-            />
-          </Link>
+          <BrandLogo size="md" />
           <div className="flex items-center gap-3">
             <Link
               href="/events"
@@ -47,13 +36,13 @@ export default function HomePage() {
       </header>
 
       {/* Main Command Center & Intake */}
-      <div className="max-w-4xl mx-auto px-4 pt-10 pb-16 space-y-10">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 pt-12 pb-20 flex flex-col gap-12">
         {/* Focused Hero Section */}
-        <section className="text-center flex flex-col items-center space-y-3">
+        <section className="text-center flex flex-col items-center gap-4">
           <Badge variant="neutral" icon="clipboard">
-            Audited celebration planner
+            Audited celebration planner • Built for India (INR ₹)
           </Badge>
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-primary tracking-tight max-w-2xl leading-tight">
+          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-display text-primary tracking-tight max-w-3xl leading-tight">
             Turn messy celebration ideas into an audited operational plan
           </h1>
           <p className="text-secondary text-base sm:text-lg max-w-2xl leading-relaxed">

@@ -11,3 +11,4 @@ export * from "./Table";
 export * from "./Overlay";
 export * from "./Toast";
 export * from "./Feedback";
+export * from "./BrandLogo";
