@@ -2,47 +2,56 @@
 
 /**
  * @module WeddingExtras
- * @purpose Wedding-specific tools: Photography Shot List, Dietary Restrictions tracker, and Table Seating.
- * @rubric Problem Statement Alignment – Event-type specific specialized domain workflows.
+ * @purpose Specialized modules for wedding planning:
+ *          Table seating arrangement calculator, dietary restriction breakdown,
+ *          and day-of photography shot list checklist.
+ * @rubric Tier 2 Features & Domain Completeness – Type-specific operational features.
  */
 
 import React, { useState } from "react";
 import { EventPlan } from "@/domain/types";
-import { Surface, Badge, Button, Input, Icon } from "@/components/ui";
+import { Surface, Badge, Button, Icon, Input } from "@/components/ui";
 
 interface WeddingExtrasProps {
   plan: EventPlan;
 }
 
-const DEFAULT_SHOTS = [
-  { id: "shot_1", category: "Getting Ready", item: "Dress hanging & invitation suite detail", done: false },
-  { id: "shot_2", category: "Getting Ready", item: "Rings, shoes, bouquet, and jewelry flat-lay", done: false },
-  { id: "shot_3", category: "Getting Ready", item: "Mother zipping dress / father first look", done: false },
-  { id: "shot_4", category: "Ceremony", item: "Groom's reaction walking down aisle", done: false },
-  { id: "shot_5", category: "Ceremony", item: "First kiss and recessional cheer", done: false },
-  { id: "shot_6", category: "Formals", item: "Full wedding party & immediate families", done: false },
-  { id: "shot_7", category: "Reception", item: "Grand entrance & first dance golden hour", done: false },
-  { id: "shot_8", category: "Reception", item: "Toasts, speeches, and champagne toast", done: false },
-  { id: "shot_9", category: "Reception", item: "Cake cutting and sparkler exit", done: false },
+interface ShotItem {
+  id: string;
+  category: "pre-ceremony" | "ceremony" | "portraits" | "reception";
+  item: string;
+  done: boolean;
+}
+
+const DEFAULT_SHOTS: ShotItem[] = [
+  { id: "s1", category: "pre-ceremony", item: "Wedding outfits hanging and jewelry details", done: false },
+  { id: "s2", category: "pre-ceremony", item: "Getting ready candid moments and makeup final touches", done: false },
+  { id: "s3", category: "ceremony", item: "Entrance / Baraat procession and welcome", done: false },
+  { id: "s4", category: "ceremony", item: "Vows exchange and ring / garland ceremony", done: false },
+  { id: "s5", category: "ceremony", item: "First kiss / blessings and recessional walk", done: false },
+  { id: "s6", category: "portraits", item: "Couple portraits with natural golden hour lighting", done: false },
+  { id: "s7", category: "portraits", item: "Immediate family portraits and multigenerational group shots", done: false },
+  { id: "s8", category: "portraits", item: "Bridal party / groomsmen celebration poses", done: false },
+  { id: "s9", category: "reception", item: "Reception hall reveal, centerpieces, and cake setup", done: false },
+  { id: "s10", category: "reception", item: "Grand entrance and first dance", done: false },
+  { id: "s11", category: "reception", item: "Toasts, speeches, and emotional guest reactions", done: false },
+  { id: "s12", category: "reception", item: "Cake cutting and late-night dance floor candids", done: false },
 ];
 
 export function WeddingExtras({ plan }: WeddingExtrasProps) {
-  const [shotList, setShotList] = useState(DEFAULT_SHOTS);
-  const [newShot, setNewShot] = useState("");
-
-  // Dietary counts (initialized from guest count)
   const guests = plan.profile.guestCount;
+  const numTables = Math.max(1, Math.ceil(guests / 8));
+
   const [dietary, setDietary] = useState({
-    standard: Math.max(0, Math.round(guests * 0.7)),
-    vegetarian: Math.max(0, Math.round(guests * 0.15)),
-    vegan: Math.max(0, Math.round(guests * 0.08)),
-    glutenFree: Math.max(0, Math.round(guests * 0.05)),
-    nutAllergy: Math.max(0, Math.round(guests * 0.02)),
+    vegetarian: Math.round(guests * 0.4),
+    vegan: Math.round(guests * 0.05),
+    glutenFree: Math.round(guests * 0.05),
+    halalOrKosher: Math.round(guests * 0.1),
+    noRestrictions: Math.max(0, guests - Math.round(guests * 0.6)),
   });
 
-  // Seating tables estimation (e.g. 8-10 top rounds)
-  const tableCapacity = 8;
-  const numTables = Math.ceil(guests / tableCapacity);
+  const [shotList, setShotList] = useState<ShotItem[]>(DEFAULT_SHOTS);
+  const [newShot, setNewShot] = useState("");
 
   function toggleShot(id: string) {
     setShotList((prev) =>
@@ -56,8 +65,8 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
     setShotList((prev) => [
       ...prev,
       {
-        id: `shot_${Date.now()}`,
-        category: "Custom",
+        id: `s_custom_${Date.now()}`,
+        category: "portraits",
         item: newShot.trim(),
         done: false,
       },
@@ -69,28 +78,27 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
 
   return (
     <div className="space-y-6">
-      {/* Overview Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        {/* Table & Seating Math */}
+        {/* Table Seating Calculator */}
         <Surface className="p-5 space-y-3">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-md bg-wedding-tint/15 text-wedding-tint">
-              <Icon name="users" size="sm" aria-hidden="true" />
+            <span className="p-2 rounded-control bg-tint-wedding-bg text-tint-wedding border border-tint-wedding-border">
+              <Icon name="users" size={16} aria-hidden />
             </span>
-            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Table Seating Plan</h3>
+            <h3 className="font-bold text-primary font-display">Table Seating Plan</h3>
           </div>
-          <p className="text-xs text-neutral-600 dark:text-neutral-400">
+          <p className="text-xs text-secondary">
             For {guests} guests with standard 60-inch round tables (8 seats per table).
           </p>
-          <div className="p-3 bg-neutral-50 dark:bg-neutral-800/50 rounded-md flex items-center justify-between">
-            <span className="text-xs font-semibold text-neutral-700 dark:text-neutral-300">
+          <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle flex items-center justify-between">
+            <span className="text-xs font-semibold text-primary">
               Recommended Tables:
             </span>
-            <span className="text-lg font-bold text-primary-600 dark:text-primary-400 tnum">
+            <span className="text-lg font-bold text-primary tnum">
               {numTables} Round Tables
             </span>
           </div>
-          <div className="text-xs text-neutral-500">
+          <div className="text-xs text-tertiary">
             Includes 1 Head Table / Sweetheart Table + {Math.max(0, numTables - 1)} Guest Tables.
           </div>
         </Surface>
@@ -99,40 +107,42 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
         <Surface className="p-5 space-y-3 md:col-span-2">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <span className="p-2 rounded-md bg-success/15 text-success">
-                <Icon name="check" size="sm" aria-hidden="true" />
+              <span className="p-2 rounded-control bg-status-success-bg text-status-success border border-status-success-border">
+                <Icon name="check" size={16} aria-hidden />
               </span>
-              <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">
+              <h3 className="font-bold text-primary font-display">
                 Dietary &amp; Catering Breakdown
               </h3>
             </div>
-            <span className="text-xs text-neutral-500 font-mono tnum">
+            <span className="text-xs text-tertiary font-mono tnum">
               Total Meals: {Object.values(dietary).reduce((a, b) => a + b, 0)} / {guests}
             </span>
           </div>
 
           <div className="grid grid-cols-2 sm:grid-cols-5 gap-3 pt-2">
             {Object.entries(dietary).map(([key, val]) => (
-              <div key={key} className="p-3 rounded-md bg-neutral-50 dark:bg-neutral-800/50 text-center">
-                <p className="text-xs font-medium text-neutral-500 capitalize">
+              <div key={key} className="p-3 rounded-control bg-surface-elevated border border-border-subtle text-center">
+                <p className="text-xs font-medium text-secondary capitalize">
                   {key.replace(/([A-Z])/g, " $1")}
                 </p>
                 <div className="flex items-center justify-center gap-2 mt-1">
                   <button
+                    type="button"
                     onClick={() =>
                       setDietary((p) => ({ ...p, [key]: Math.max(0, p[key as keyof typeof dietary] - 1) }))
                     }
-                    className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 flex items-center justify-center"
+                    className="w-5 h-5 rounded-control bg-surface border border-border-strong text-xs font-bold text-primary hover:bg-surface-elevated flex items-center justify-center cursor-pointer"
                     aria-label={`Decrease ${key}`}
                   >
                     -
                   </button>
-                  <span className="text-base font-bold text-neutral-900 dark:text-neutral-100 tnum">{val}</span>
+                  <span className="text-base font-bold text-primary tnum">{val}</span>
                   <button
+                    type="button"
                     onClick={() =>
                       setDietary((p) => ({ ...p, [key]: p[key as keyof typeof dietary] + 1 }))
                     }
-                    className="w-5 h-5 rounded-full bg-neutral-200 dark:bg-neutral-700 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-300 dark:hover:bg-neutral-600 flex items-center justify-center"
+                    className="w-5 h-5 rounded-control bg-surface border border-border-strong text-xs font-bold text-primary hover:bg-surface-elevated flex items-center justify-center cursor-pointer"
                     aria-label={`Increase ${key}`}
                   >
                     +
@@ -146,22 +156,22 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
 
       {/* Photography Shot List */}
       <Surface className="p-6 space-y-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-neutral-100 dark:border-neutral-800">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-border-subtle">
           <div>
-            <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-100 font-display">
+            <h3 className="font-bold text-base text-primary font-display">
               Day-of Photography Shot List
             </h3>
-            <p className="text-xs text-neutral-500">
-              Essential must-have moments from ceremony to reception send-off.
+            <p className="text-xs text-secondary mt-0.5">
+              Essential must-have moments from pre-ceremony to reception send-off.
             </p>
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-xs font-semibold text-neutral-600 dark:text-neutral-400 tnum">
+            <span className="text-xs font-semibold text-secondary tnum">
               {completedShots} of {shotList.length} captured
             </span>
-            <div className="w-24 bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+            <div className="w-24 bg-surface-elevated rounded-full h-2 overflow-hidden border border-border-subtle">
               <div
-                className="h-2 rounded-full bg-primary-600 transition-all"
+                className="h-2 rounded-full bg-primary transition-all"
                 style={{ width: `${shotList.length ? Math.round((completedShots / shotList.length) * 100) : 0}%` }}
               />
             </div>
@@ -174,7 +184,7 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
             type="text"
             value={newShot}
             onChange={(e) => setNewShot(e.target.value)}
-            placeholder="Add custom shot (e.g. Groom reading letter, Grandma dancing)..."
+            placeholder="Add custom shot (e.g. Groom reading letter, Grandparents blessings)..."
             className="flex-1"
           />
           <Button
@@ -183,7 +193,7 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
             size="md"
             icon="plus"
           >
-            Add Shot
+            Add shot
           </Button>
         </form>
 
@@ -191,10 +201,10 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
           {shotList.map((shot) => (
             <div
               key={shot.id}
-              className={`flex items-start gap-3 p-3 rounded-md border transition-colors ${
+              className={`flex items-start gap-3 p-3 rounded-control border transition-colors ${
                 shot.done
-                  ? "bg-success-surface border-success"
-                  : "bg-neutral-50 dark:bg-neutral-800/40 border-neutral-200 dark:border-neutral-800 hover:border-neutral-300"
+                  ? "bg-status-success-bg/30 border-status-success-border"
+                  : "bg-surface border-border-subtle hover:border-border-strong"
               }`}
             >
               <input
@@ -202,7 +212,7 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
                 type="checkbox"
                 checked={shot.done}
                 onChange={() => toggleShot(shot.id)}
-                className="mt-0.5 h-4 w-4 rounded-xs border-neutral-300 text-primary-600 focus:ring-primary-500 cursor-pointer"
+                className="mt-0.5 h-4 w-4 rounded-control border-border-strong text-primary focus:ring-primary cursor-pointer"
               />
               <label htmlFor={shot.id} className="space-y-0.5 cursor-pointer flex-1">
                 <Badge variant="neutral" size="sm">
@@ -211,8 +221,8 @@ export function WeddingExtras({ plan }: WeddingExtrasProps) {
                 <span
                   className={`block text-xs pt-1 ${
                     shot.done
-                      ? "line-through text-neutral-400 dark:text-neutral-500"
-                      : "text-neutral-800 dark:text-neutral-200"
+                      ? "line-through text-tertiary"
+                      : "text-primary"
                   }`}
                 >
                   {shot.item}

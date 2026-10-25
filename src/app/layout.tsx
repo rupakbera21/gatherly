@@ -53,6 +53,13 @@ export const metadata: Metadata = {
       "Plan your perfect event with AI-powered budgets, timelines, and personalised ideas.",
     siteName: "Gatherly",
   },
+  icons: {
+    icon: [
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/logo.png", type: "image/png" },
+    ],
+    apple: "/logo.png",
+  },
 };
 
 export const viewport: Viewport = {

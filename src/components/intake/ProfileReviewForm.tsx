@@ -225,10 +225,10 @@ export function ProfileReviewForm({
             onChange={(e) => setProfile({ ...profile, currency: e.target.value })}
             className="w-full h-10 px-3.5 py-2 text-sm rounded-control border border-border-strong bg-surface text-primary focus:outline-none focus:border-primary cursor-pointer"
           >
+            <option value="INR">INR (₹)</option>
             <option value="USD">USD ($)</option>
             <option value="EUR">EUR (€)</option>
             <option value="GBP">GBP (£)</option>
-            <option value="INR">INR (₹)</option>
             <option value="JPY">JPY (¥)</option>
             <option value="CAD">CAD ($)</option>
             <option value="AUD">AUD ($)</option>

@@ -2,9 +2,10 @@
 
 /**
  * @module PlanLayout
- * @purpose Shared layout for all plan sub-routes (/overview, /budget, /timeline, /vendors, /ideas, /extras, /run-of-show).
+ * @purpose Unified workspace layout for all plan sub-routes.
  *          Mounts the client store, maintains single source of truth,
- *          displays event summary, provider badges, undo/redo controls, and tab navigation.
+ *          displays brand header, event summary, provider badges,
+ *          seamlessly attached tab navigation, and undo/redo controls.
  * @rubric Problem Statement Alignment & Accessibility – Single source of truth, WCAG 2.2 AA.
  */
 
@@ -43,17 +44,17 @@ function PlanLayoutInner({ children, params }: PlanLayoutProps) {
   if (!plan) {
     return (
       <div className="max-w-4xl mx-auto px-4 py-16 text-center">
-        <h1 className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 mb-2 font-display">
+        <h1 className="text-2xl font-bold text-primary mb-2 font-display">
           Event Plan Not Found
         </h1>
-        <p className="text-neutral-600 dark:text-neutral-400 mb-6">
+        <p className="text-secondary mb-6">
           This event plan could not be found in your local browser storage.
         </p>
         <Link
           href="/events"
-          className="inline-flex items-center justify-center px-5 py-2.5 rounded-md bg-primary-600 hover:bg-primary-700 text-white font-medium text-sm transition-colors"
+          className="inline-flex items-center justify-center px-5 py-2.5 rounded-control bg-primary hover:bg-primary-hover text-primary-fg font-medium text-sm transition-colors"
         >
-          Go to My Events
+          Go to saved plans
         </Link>
       </div>
     );
@@ -74,148 +75,161 @@ function PlanLayoutInner({ children, params }: PlanLayoutProps) {
   ];
 
   const eventType = plan.profile.type;
-  const typeBorderColor =
-    eventType === "wedding"
-      ? "border-t-wedding-tint"
-      : eventType === "birthday"
-      ? "border-t-birthday-tint"
-      : "border-t-community-tint";
 
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 sm:py-8 space-y-6">
-
-      {/* Plan Header */}
-      <header className={`bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-xs border-t-4 ${typeBorderColor}`}>
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
+    <div className="min-h-screen bg-canvas text-primary flex flex-col">
+      {/* Unified App & Plan Header */}
+      <header className="w-full bg-surface border-b border-border-subtle sticky top-0 z-30 shadow-xs">
+        {/* Top Global Utility Row */}
+        <div className="border-b border-border-subtle">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Link
+                href="/"
+                className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-control"
+                aria-label="Gatherly Home"
+              >
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src="/logo.png"
+                  alt="Gatherly Logo"
+                  className="h-7 w-auto object-contain"
+                />
+              </Link>
+              <span className="text-tertiary" aria-hidden="true">/</span>
               <Link
                 href="/events"
-                className="text-xs font-semibold text-neutral-500 hover:text-neutral-900 dark:hover:text-neutral-200"
+                className="text-xs font-semibold text-secondary hover:text-primary transition-colors no-underline"
               >
-                Events
+                Saved plans
               </Link>
-              <span className="text-neutral-300 dark:text-neutral-700" aria-hidden="true">/</span>
-              <Badge variant={eventType} size="sm">
-                {eventType}
-              </Badge>
-
-              {/* Provider Badge */}
-              <Badge variant="neutral" size="sm">
-                {plan.aiProviderBadge === "groq"
-                  ? "Generated with backup service"
-                  : plan.aiProviderBadge === "baseline"
-                  ? "Standard template (AI unavailable)"
-                  : "AI-generated"}
-              </Badge>
-            </div>
-
-            <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-display tracking-tight">
-              {plan.profile.title}
-            </h1>
-
-            <div className="flex flex-wrap items-center gap-4 text-xs sm:text-sm text-neutral-600 dark:text-neutral-400 mt-2">
-              <span className="inline-flex items-center gap-1.5 tnum">
-                <Icon name="calendar" size="xs" aria-hidden="true" />
-                <span>{plan.profile.eventDate}</span>
-              </span>
-              <span className="inline-flex items-center gap-1.5 tnum">
-                <Icon name="users" size="xs" aria-hidden="true" />
-                <span>{plan.profile.guestCount.toLocaleString()} guests</span>
-              </span>
-              {plan.profile.location && (
-                <span className="inline-flex items-center gap-1.5">
-                  <Icon name="location" size="xs" aria-hidden="true" />
-                  <span>{plan.profile.location}</span>
-                </span>
-              )}
-              <span className="font-semibold text-primary-600 dark:text-primary-400 tnum">
-                {isPast ? "Event concluded" : `${daysLeft} days to go`}
+              <span className="text-tertiary hidden sm:inline" aria-hidden="true">/</span>
+              <span className="text-xs font-medium text-primary hidden sm:inline truncate max-w-xs">
+                {plan.profile.title}
               </span>
             </div>
-          </div>
 
-          {/* Undo / Redo Toolbar */}
-          <div className="flex items-center gap-2 self-start md:self-center">
-            <Button
-              variant="secondary"
-              size="sm"
-              icon="undo"
-              onClick={() => undo(eventId)}
-              disabled={!canUndo}
-              aria-label="Undo last change"
-              title="Undo last change (Ctrl+Z)"
-            >
-              Undo
-            </Button>
-            <Button
-              variant="secondary"
-              size="sm"
-              icon="redo"
-              onClick={() => redo(eventId)}
-              disabled={!canRedo}
-              aria-label="Redo last undone change"
-              title="Redo (Ctrl+Y)"
-            >
-              Redo
-            </Button>
+            <div className="flex items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="undo"
+                onClick={() => undo(eventId)}
+                disabled={!canUndo}
+                aria-label="Undo last change"
+                title="Undo last change (Ctrl+Z)"
+              >
+                Undo
+              </Button>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="redo"
+                onClick={() => redo(eventId)}
+                disabled={!canRedo}
+                aria-label="Redo last undone change"
+                title="Redo (Ctrl+Y)"
+              >
+                Redo
+              </Button>
+              <button
+                ref={copilotBtnRef}
+                onClick={() => setIsCopilotOpen(true)}
+                className="ml-2 px-3 py-1.5 rounded-control bg-primary text-primary-fg hover:bg-primary-hover text-xs font-semibold transition-colors flex items-center gap-1.5 cursor-pointer"
+                aria-label="Open Plan Copilot assistant"
+              >
+                <Icon name="sparkles" size={14} aria-hidden />
+                <span>Copilot</span>
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Tab Navigation */}
-        <nav
-          className="flex items-center gap-1 overflow-x-auto border-t border-neutral-200 dark:border-neutral-800 mt-5 pt-3 scrollbar-none"
-          aria-label="Event sections"
-        >
-          {tabs.map((tab) => {
-            const isActive = pathname === tab.href;
-            return (
-              <Link
-                key={tab.href}
-                href={tab.href}
-                className={`px-3.5 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors flex items-center ${
-                  isActive
-                    ? "bg-primary-50 dark:bg-primary-950/60 text-primary-900 dark:text-primary-200 font-semibold border-b-2 border-primary-600"
-                    : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900 dark:hover:text-neutral-100 hover:bg-neutral-100 dark:hover:bg-neutral-800"
-                }`}
-                aria-current={isActive ? "page" : undefined}
-              >
-                {tab.label}
-              </Link>
-            );
-          })}
-        </nav>
+        {/* Event Identity & Metadata Row */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 py-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <div className="flex flex-wrap items-center gap-2 mb-1">
+              <Badge variant={eventType} size="sm">
+                {eventType}
+              </Badge>
+              <Badge variant="neutral" size="sm">
+                {plan.aiProviderBadge === "groq"
+                  ? "Standard offline fallback"
+                  : plan.aiProviderBadge === "baseline"
+                  ? "Standard template"
+                  : "AI-governed plan"}
+              </Badge>
+              <span className="text-xs font-semibold text-primary tnum px-2 py-0.5 rounded-full bg-surface-elevated border border-border-subtle">
+                {isPast ? "Concluded" : `${daysLeft} days to go`}
+              </span>
+            </div>
+            <h1 className="text-xl sm:text-2xl font-bold font-display text-primary tracking-tight">
+              {plan.profile.title}
+            </h1>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3 text-xs text-secondary">
+            <span className="inline-flex items-center gap-1.5 tnum bg-surface-elevated px-2.5 py-1 rounded-control border border-border-subtle">
+              <Icon name="calendar" size={14} aria-hidden />
+              <span>{plan.profile.eventDate}</span>
+            </span>
+            <span className="inline-flex items-center gap-1.5 tnum bg-surface-elevated px-2.5 py-1 rounded-control border border-border-subtle">
+              <Icon name="users" size={14} aria-hidden />
+              <span>{plan.profile.guestCount.toLocaleString()} guests</span>
+            </span>
+            {plan.profile.location && (
+              <span className="inline-flex items-center gap-1.5 bg-surface-elevated px-2.5 py-1 rounded-control border border-border-subtle">
+                <Icon name="location" size={14} aria-hidden />
+                <span>{plan.profile.location}</span>
+              </span>
+            )}
+          </div>
+        </div>
+
+        {/* Directly Attached Navigation Tabs */}
+        <div className="border-t border-border-subtle">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6">
+            <nav
+              className="flex items-center gap-1 overflow-x-auto scrollbar-none -mb-px"
+              aria-label="Event plan sections"
+            >
+              {tabs.map((tab) => {
+                const isActive = pathname === tab.href;
+                return (
+                  <Link
+                    key={tab.href}
+                    href={tab.href}
+                    className={`px-3.5 py-2.5 text-xs font-semibold whitespace-nowrap transition-colors flex items-center border-b-2 ${
+                      isActive
+                        ? "border-primary text-primary bg-primary-subtle"
+                        : "border-transparent text-secondary hover:text-primary hover:border-border-strong"
+                    }`}
+                    aria-current={isActive ? "page" : undefined}
+                  >
+                    {tab.label}
+                  </Link>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
       </header>
 
-      {/* Persistent AI review notice */}
-      <div
-        role="note"
-        className="px-4 py-2.5 bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 rounded-md text-xs text-neutral-600 dark:text-neutral-400 flex items-center justify-between"
-      >
-        <span className="inline-flex items-center gap-1.5">
-          <Icon name="info" size="xs" aria-hidden="true" />
-          <span>AI-generated planning assistant. Please review estimates and permits before signing contracts.</span>
-        </span>
-        <span className="hidden sm:inline text-neutral-500">Privacy-first: local storage only</span>
-      </div>
-
-      {/* Sub-route Content */}
-      <main id="main-content" tabIndex={-1} className="focus:outline-hidden">
+      {/* Main Continuous Workspace Content Canvas */}
+      <main id="main-content" tabIndex={-1} className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-6 focus:outline-none">
         {children}
       </main>
 
-      {/* Floating Copilot Button */}
-      <div className="fixed bottom-6 right-6 z-40">
-        <button
-          ref={copilotBtnRef}
-          onClick={() => setIsCopilotOpen(true)}
-          className="px-4 py-2.5 rounded-full bg-primary-600 hover:bg-primary-700 text-white text-xs font-semibold shadow-md hover:shadow-lg transition-all flex items-center gap-2 border border-primary-500"
-          aria-label="Open Plan Copilot assistant"
-        >
-          <Icon name="sparkles" size="sm" aria-hidden="true" />
-          <span>Ask Copilot</span>
-        </button>
-      </div>
+      {/* Quiet Grounded Footer Status Bar */}
+      <footer className="w-full border-t border-border-subtle bg-surface-elevated py-4 px-4 sm:px-6 mt-auto">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-tertiary">
+          <div className="flex items-center gap-2">
+            <Icon name="shield" size={14} aria-hidden />
+            <span>Local privacy guarantee: All event records remain stored exclusively in your browser.</span>
+          </div>
+          <span>Verify permits and vendor contracts before final booking.</span>
+        </div>
+      </footer>
 
       {/* Copilot Drawer */}
       <CopilotDrawer
@@ -232,7 +246,7 @@ export default function PlanLayout(props: PlanLayoutProps) {
   return (
     <Suspense
       fallback={
-        <div className="max-w-6xl mx-auto px-4 py-8 animate-pulse text-neutral-400">
+        <div className="max-w-6xl mx-auto px-4 py-8 animate-pulse text-tertiary">
           Loading plan workspace...
         </div>
       }

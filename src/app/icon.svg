@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" fill="none">
+  <defs>
+    <linearGradient id="g-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#00D2D3" />
+      <stop offset="35%" stop-color="#0066FF" />
+      <stop offset="70%" stop-color="#7C3AED" />
+      <stop offset="100%" stop-color="#9333EA" />
+    </linearGradient>
+    <linearGradient id="swoosh-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#00D2D3" />
+      <stop offset="50%" stop-color="#0066FF" />
+      <stop offset="100%" stop-color="#7C3AED" />
+    </linearGradient>
+  </defs>
+
+  <!-- Calendar Outer Frame (Shaped as modern rounded G) -->
+  <rect x="14" y="18" width="62" height="62" rx="18" fill="url(#g-grad)" />
+  
+  <!-- Calendar Rings / Binders -->
+  <rect x="26" y="10" width="8" height="16" rx="4" fill="#0066FF" />
+  <rect x="56" y="10" width="8" height="16" rx="4" fill="#7C3AED" />
+
+  <!-- Inner Calendar Grid Surface -->
+  <rect x="22" y="30" width="46" height="38" rx="8" fill="#FFFFFF" />
+
+  <!-- Calendar Grid Tiles -->
+  <rect x="28" y="36" width="9" height="8" rx="2.5" fill="#BFDBFE" />
+  <rect x="41" y="36" width="9" height="8" rx="2.5" fill="#BFDBFE" />
+  <rect x="53" y="36" width="9" height="8" rx="2.5" fill="#00D2D3" />
+  
+  <rect x="28" y="48" width="9" height="8" rx="2.5" fill="#E0E7FF" />
+  <rect x="41" y="48" width="9" height="8" rx="2.5" fill="#DDD6FE" />
+  <rect x="53" y="48" width="9" height="8" rx="2.5" fill="#E0E7FF" />
+
+  <!-- Dynamic Swoosh forming lower G curve -->
+  <path d="M 10 60 C 8 78 26 90 46 90 C 66 90 84 76 84 56 C 84 50 80 46 74 46 C 70 46 66 50 64 54 C 62 62 54 70 44 70 C 32 70 24 62 24 54 C 24 44 38 42 58 40" 
+        stroke="url(#swoosh-grad)" stroke-width="7" stroke-linecap="round" fill="none" />
+
+  <!-- Sparkle Stars -->
+  <path d="M 82 22 Q 82 30 90 30 Q 82 30 82 38 Q 82 30 74 30 Q 82 30 82 22 Z" fill="#7C3AED" />
+  <path d="M 68 14 Q 68 18 72 18 Q 68 18 68 22 Q 68 18 64 18 Q 68 18 68 14 Z" fill="#00D2D3" />
+  <path d="M 88 44 Q 88 47 91 47 Q 88 47 88 50 Q 88 47 85 47 Q 88 47 88 44 Z" fill="#9333EA" />
+</svg>

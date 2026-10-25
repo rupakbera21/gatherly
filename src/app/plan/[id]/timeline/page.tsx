@@ -163,349 +163,344 @@ export default function PlanTimelinePage({ params }: TimelinePageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Top Header & Metrics */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-display">
-            Milestone Timeline
-          </h2>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            Critical path scheduling, calendar sync (.ics), and task dependencies.
-          </p>
-        </div>
-
-        <div className="flex flex-wrap items-center gap-2">
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="calendar"
-            onClick={handleExportIcs}
-            title="Export standard RFC 5545 iCalendar file compatible with Google Calendar, Apple Calendar, and Outlook"
-          >
-            Export .ICS
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="download"
-            onClick={handleExportCsv}
-            title="Export CSV spreadsheet"
-          >
-            Export CSV
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="sparkles"
-            onClick={handleRegenerateTimeline}
-            isLoading={isRegenerating}
-            disabled={isRegenerating}
-          >
-            {isRegenerating ? "Regenerating..." : "Regenerate AI"}
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            icon="plus"
-            onClick={() => setIsAddOpen(true)}
-          >
-            Add Milestone
-          </Button>
-        </div>
-      </div>
-
-      {/* Metrics Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Total Milestones</p>
-          <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
-            {activeMilestones.length}
-          </p>
-        </Surface>
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Completed</p>
-          <p className="mt-1 text-2xl font-bold text-success tnum">
-            {completedCount} <span className="text-xs font-normal text-neutral-400">({activeMilestones.length ? Math.round((completedCount / activeMilestones.length) * 100) : 0}%)</span>
-          </p>
-        </Surface>
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-warning uppercase tracking-wider">Critical Path</p>
-          <p className="mt-1 text-2xl font-bold text-warning tnum">
-            {criticalCount}
-          </p>
-        </Surface>
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-danger uppercase tracking-wider">Overdue Items</p>
-          <p className="mt-1 text-2xl font-bold text-danger tnum">
-            {overdueCount}
-          </p>
-        </Surface>
-      </div>
-
-      {/* Dependency Cycle Alert if DAG detected circularity */}
-      {processedResult?.hasCycle && (
-        <div className="p-4 rounded-md bg-warning-surface border border-warning text-warning text-sm flex items-start gap-3">
-          <Icon name="alert-triangle" size="sm" className="shrink-0 mt-0.5 text-warning" aria-hidden="true" />
-          <div>
-            <p className="font-semibold">Circular Dependency Detected</p>
-            <p className="text-xs mt-0.5">
-              A dependency cycle exists between milestones: {processedResult.cycleNodes.join(" -> ")}.
-              Dependencies have been safely untangled to prevent scheduling deadlock.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Filters */}
-      <div className="flex flex-wrap items-center gap-3 p-3 bg-neutral-50 dark:bg-neutral-900/50 rounded-md border border-neutral-200 dark:border-neutral-800">
-        <span className="text-xs font-medium text-neutral-500 dark:text-neutral-400">Filter by:</span>
-
-        <select
-          value={filterCategory}
-          onChange={(e) => setFilterCategory(e.target.value)}
-          aria-label="Filter by category"
-          className="text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-neutral-800 dark:text-neutral-200"
-        >
-          <option value="all">All Categories</option>
-          {categories.map((cat) => (
-            <option key={cat} value={cat}>
-              {cat}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={filterStatus}
-          onChange={(e) => setFilterStatus(e.target.value)}
-          aria-label="Filter by status"
-          className="text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2.5 py-1.5 text-neutral-800 dark:text-neutral-200"
-        >
-          <option value="all">All Statuses</option>
-          <option value="pending">Pending</option>
-          <option value="in_progress">In Progress</option>
-          <option value="completed">Completed</option>
-        </select>
-
-        {(filterCategory !== "all" || filterStatus !== "all") && (
-          <button
-            onClick={() => {
-              setFilterCategory("all");
-              setFilterStatus("all");
-            }}
-            className="text-xs text-primary-600 dark:text-primary-400 hover:underline ml-auto"
-          >
-            Reset Filters
-          </button>
-        )}
-      </div>
-
-      {/* Add Milestone Modal */}
-      {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 font-display">
-              Add New Milestone
-            </h3>
-            <form onSubmit={handleAddMilestone} className="space-y-4">
-              <div>
-                <label htmlFor="new-milestone-title" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Milestone Title *
-                </label>
-                <Input
-                  id="new-milestone-title"
-                  type="text"
-                  required
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="e.g., Finalize Catering Menu"
-                />
+      {/* Master Timeline Surface */}
+      <Surface variant="default" className="border border-border-subtle overflow-hidden shadow-xs">
+        {/* Top Header & Metrics */}
+        <div className="p-5 sm:p-6 border-b border-border-subtle bg-surface">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-secondary">
+                  Backward Milestone DAG
+                </span>
+                <Badge variant="neutral" size="sm">
+                  {completedCount} of {activeMilestones.length} completed
+                </Badge>
               </div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-primary font-display">
+                Milestone Timeline & Schedule
+              </h2>
+              <p className="text-xs sm:text-sm text-secondary mt-0.5">
+                Critical path scheduling, calendar sync (.ics), and phased task dependencies.
+              </p>
+            </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label htmlFor="new-milestone-due" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Due Date *
-                  </label>
-                  <Input
-                    id="new-milestone-due"
-                    type="date"
-                    required
-                    value={newDueDate}
-                    onChange={(e) => setNewDueDate(e.target.value)}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="new-milestone-category" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Category
-                  </label>
-                  <Input
-                    id="new-milestone-category"
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Venue, Catering, etc."
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label htmlFor="new-milestone-notes" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Notes
-                </label>
-                <textarea
-                  id="new-milestone-notes"
-                  rows={2}
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  placeholder="Additional context or links..."
-                  className="w-full text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsAddOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                >
-                  Create Milestone
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Timeline Ordered Rail */}
-      <ol
-        role="list"
-        aria-label="Chronological milestones ordered list"
-        className="relative border-l-2 border-primary-200 dark:border-primary-900 ml-4 pl-6 space-y-4 list-none"
-      >
-        {filteredMilestones.length === 0 ? (
-          <li className="p-8 text-center text-neutral-500 dark:text-neutral-400 bg-white dark:bg-neutral-900 rounded-md border border-neutral-200 dark:border-neutral-800 list-none">
-            No milestones match your current filter.
-          </li>
-        ) : (
-          filteredMilestones.map((m) => {
-            const isCompleted = m.status === "completed";
-            const isInProgress = m.status === "in_progress";
-
-            return (
-              <li
-                key={m.id}
-                className={`relative group p-4 rounded-md border transition-all ${
-                  m.isCriticalPath
-                    ? "border-warning bg-warning-surface"
-                    : "border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900"
-                } shadow-xs list-none`}
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="calendar"
+                onClick={handleExportIcs}
+                title="Export RFC 5545 iCalendar"
               >
-                {/* Timeline Node Dot */}
-                <span
-                  className={`absolute -left-8 top-5 w-4 h-4 rounded-full border-2 border-white dark:border-neutral-950 transition-colors ${
-                    isCompleted
-                      ? "bg-success ring-4 ring-success/20"
-                      : isInProgress
-                      ? "bg-primary-600 ring-4 ring-primary-100 dark:ring-primary-950"
-                      : "bg-neutral-300 dark:bg-neutral-700 ring-4 ring-neutral-100 dark:ring-neutral-900"
-                  }`}
-                />
+                Export .ICS
+              </Button>
 
-                <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
-                  <div className="space-y-1.5 flex-1">
-                    <div className="flex flex-wrap items-center gap-2">
-                      <Badge variant="neutral" size="sm">
-                        {m.category || "General"}
-                      </Badge>
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="download"
+                onClick={handleExportCsv}
+                title="Export CSV spreadsheet"
+              >
+                Export CSV
+              </Button>
 
-                      {m.isCriticalPath && (
-                        <Badge variant="warning" size="sm" icon="alert-triangle">
-                          Critical Path
-                        </Badge>
-                      )}
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="sparkles"
+                onClick={handleRegenerateTimeline}
+                isLoading={isRegenerating}
+                disabled={isRegenerating}
+              >
+                {isRegenerating ? "Regenerating..." : "Regenerate AI"}
+              </Button>
 
-                      {m.overdue && (
-                        <Badge variant="danger" size="sm">
-                          Overdue
-                        </Badge>
-                      )}
+              <Button
+                variant="primary"
+                size="sm"
+                icon="plus"
+                onClick={() => setIsAddOpen(true)}
+              >
+                Add milestone
+              </Button>
+            </div>
+          </div>
 
-                      <span className="text-xs text-neutral-500 dark:text-neutral-400 font-mono tnum">
-                        Due: {m.dueDate}
-                      </span>
-                    </div>
+          {/* Metrics Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-border-subtle">
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wider">Total milestones</span>
+              <p className="mt-1 text-xl font-bold text-primary tnum">{activeMilestones.length}</p>
+            </div>
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wider">Completed</span>
+              <p className="mt-1 text-xl font-bold text-status-success tnum">
+                {completedCount} <span className="text-xs font-normal text-tertiary">({activeMilestones.length ? Math.round((completedCount / activeMilestones.length) * 100) : 0}%)</span>
+              </p>
+            </div>
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-status-warning uppercase tracking-wider">Critical path</span>
+              <p className="mt-1 text-xl font-bold text-status-warning tnum">{criticalCount}</p>
+            </div>
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-status-danger uppercase tracking-wider">Overdue items</span>
+              <p className="mt-1 text-xl font-bold text-status-danger tnum">{overdueCount}</p>
+            </div>
+          </div>
 
-                    <h4
-                      className={`text-base font-semibold ${
-                        isCompleted
-                          ? "line-through text-neutral-400 dark:text-neutral-500"
-                          : "text-neutral-900 dark:text-neutral-100"
-                      }`}
-                    >
-                      {m.title}
-                    </h4>
+          {/* Dependency Cycle Alert if DAG detected circularity */}
+          {processedResult?.hasCycle && (
+            <div className="mt-4 p-3.5 rounded-control bg-status-warning-bg border border-status-warning-border text-status-warning text-xs flex items-start gap-2.5">
+              <Icon name="alert-triangle" size={16} className="shrink-0 mt-0.5" aria-hidden />
+              <div>
+                <p className="font-semibold">Circular Dependency Detected</p>
+                <p className="mt-0.5 text-secondary">
+                  A dependency cycle exists between milestones: {processedResult.cycleNodes.join(" -> ")}.
+                  Dependencies have been safely untangled to prevent scheduling deadlock.
+                </p>
+              </div>
+            </div>
+          )}
 
-                    {m.notes && (
-                      <p className="text-xs text-neutral-600 dark:text-neutral-400">
-                        {m.notes}
-                      </p>
-                    )}
+          {/* Integrated Filter Bar */}
+          <div className="mt-4 pt-4 border-t border-border-subtle flex flex-wrap items-center gap-3">
+            <span className="text-xs font-semibold text-secondary">Filter by:</span>
 
-                    {m.dependsOn && m.dependsOn.length > 0 && (
-                      <div className="flex items-center gap-1.5 pt-1 text-xs text-neutral-500 dark:text-neutral-400">
-                        <span className="font-medium">Depends on:</span>
-                        {m.dependsOn.map((depId) => {
-                          const target = activeMilestones.find((x) => x.id === depId);
-                          return (
-                            <span
-                              key={depId}
-                              className="px-1.5 py-0.5 rounded-xs bg-neutral-100 dark:bg-neutral-800 text-xs font-mono text-neutral-600 dark:text-neutral-300 tnum"
-                            >
-                              {target ? target.title : depId}
-                            </span>
-                          );
-                        })}
-                      </div>
-                    )}
+            <select
+              value={filterCategory}
+              onChange={(e) => setFilterCategory(e.target.value)}
+              aria-label="Filter by category"
+              className="text-xs rounded-control border border-border-strong bg-surface px-3 py-1.5 text-primary cursor-pointer focus:outline-none focus:border-primary"
+            >
+              <option value="all">All Categories ({categories.length})</option>
+              {categories.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat}
+                </option>
+              ))}
+            </select>
+
+            <select
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+              aria-label="Filter by status"
+              className="text-xs rounded-control border border-border-strong bg-surface px-3 py-1.5 text-primary cursor-pointer focus:outline-none focus:border-primary"
+            >
+              <option value="all">All Statuses</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="completed">Completed</option>
+            </select>
+
+            {(filterCategory !== "all" || filterStatus !== "all") && (
+              <button
+                type="button"
+                onClick={() => {
+                  setFilterCategory("all");
+                  setFilterStatus("all");
+                }}
+                className="text-xs text-primary hover:underline ml-auto font-medium cursor-pointer"
+              >
+                Reset filters
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Add Milestone Modal */}
+        {isAddOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-surface rounded-surface border border-border-strong shadow-overlay max-w-md w-full p-6 space-y-4">
+              <h3 className="text-lg font-bold text-primary font-display">
+                Add New Milestone
+              </h3>
+              <form onSubmit={handleAddMilestone} className="space-y-4">
+                <div>
+                  <label htmlFor="new-milestone-title" className="block text-xs font-semibold text-primary mb-1">
+                    Milestone Title *
+                  </label>
+                  <Input
+                    id="new-milestone-title"
+                    type="text"
+                    required
+                    value={newTitle}
+                    onChange={(e) => setNewTitle(e.target.value)}
+                    placeholder="e.g. Finalize Catering Menu"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="new-milestone-due" className="block text-xs font-semibold text-primary mb-1">
+                      Due Date *
+                    </label>
+                    <Input
+                      id="new-milestone-due"
+                      type="date"
+                      required
+                      value={newDueDate}
+                      onChange={(e) => setNewDueDate(e.target.value)}
+                    />
                   </div>
-
-                  {/* Actions & Status Toggle */}
-                  <div className="flex items-center gap-2 shrink-0">
-                    <Button
-                      variant={isCompleted ? "secondary" : isInProgress ? "primary" : "secondary"}
-                      size="sm"
-                      icon={isCompleted ? "check" : undefined}
-                      onClick={() => handleStatusToggle(m)}
-                    >
-                      {isCompleted ? "Completed" : isInProgress ? "In Progress" : "Pending"}
-                    </Button>
-
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      icon="trash"
-                      onClick={() => handleDelete(m.id)}
-                      aria-label={`Delete milestone ${m.title}`}
-                      className="text-neutral-400 hover:text-danger hover:bg-danger-surface"
+                  <div>
+                    <label htmlFor="new-milestone-category" className="block text-xs font-semibold text-primary mb-1">
+                      Category
+                    </label>
+                    <Input
+                      id="new-milestone-category"
+                      type="text"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      placeholder="Venue, Catering, etc."
                     />
                   </div>
                 </div>
-              </li>
-            );
-          })
+
+                <div>
+                  <label htmlFor="new-milestone-notes" className="block text-xs font-semibold text-primary mb-1">
+                    Notes
+                  </label>
+                  <textarea
+                    id="new-milestone-notes"
+                    rows={2}
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    placeholder="Additional context or links..."
+                    className="w-full text-xs rounded-control border border-border-strong bg-surface px-3 py-2 text-primary focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsAddOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                  >
+                    Create milestone
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
         )}
-      </ol>
+
+        {/* Timeline Ordered Rail */}
+        <div className="p-5 sm:p-6">
+          <ol
+            role="list"
+            aria-label="Chronological milestones ordered list"
+            className="relative border-l-2 border-border-strong ml-4 pl-6 space-y-4 list-none"
+          >
+            {filteredMilestones.length === 0 ? (
+              <li className="p-8 text-center text-tertiary bg-surface-elevated rounded-control border border-border-subtle list-none">
+                No milestones match your current filter.
+              </li>
+            ) : (
+              filteredMilestones.map((m) => {
+                const isCompleted = m.status === "completed";
+                const isInProgress = m.status === "in_progress";
+
+                return (
+                  <li
+                    key={m.id}
+                    className={`relative p-4 rounded-control border transition-all ${
+                      m.isCriticalPath
+                        ? "border-status-warning-border bg-status-warning-bg/40"
+                        : "border-border-subtle bg-surface"
+                    } shadow-xs list-none`}
+                  >
+                    {/* Timeline Node Dot */}
+                    <span
+                      className={`absolute -left-8 top-5 w-4 h-4 rounded-full border-2 border-surface transition-colors ${
+                        isCompleted
+                          ? "bg-status-success"
+                          : isInProgress
+                          ? "bg-primary"
+                          : "bg-surface-elevated border-border-strong"
+                      }`}
+                    />
+
+                    <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
+                      <div className="space-y-1.5 flex-1">
+                        <div className="flex flex-wrap items-center gap-2">
+                          <Badge variant="neutral" size="sm">
+                            {m.category || "General"}
+                          </Badge>
+
+                          {m.isCriticalPath && (
+                            <Badge variant="warning" size="sm" icon="alert-triangle">
+                              Critical Path
+                            </Badge>
+                          )}
+
+                          {m.overdue && (
+                            <Badge variant="danger" size="sm">
+                              Overdue
+                            </Badge>
+                          )}
+
+                          <span className="text-xs text-tertiary font-mono tnum">
+                            Due: {m.dueDate}
+                          </span>
+                        </div>
+
+                        <h4
+                          className={`text-sm font-semibold ${
+                            isCompleted ? "line-through text-tertiary" : "text-primary"
+                          }`}
+                        >
+                          {m.title}
+                        </h4>
+
+                        {m.notes && (
+                          <p className="text-xs text-secondary leading-relaxed">
+                            {m.notes}
+                          </p>
+                        )}
+                      </div>
+
+                      <div className="flex items-center gap-2 self-end sm:self-start">
+                        <button
+                          type="button"
+                          onClick={() => handleStatusToggle(m)}
+                          className={`text-xs px-2.5 py-1 rounded-control font-medium border transition-colors cursor-pointer ${
+                            isCompleted
+                              ? "bg-status-success-bg text-status-success border-status-success-border"
+                              : isInProgress
+                              ? "bg-primary-subtle text-primary border-primary"
+                              : "bg-surface text-secondary border-border-strong hover:text-primary"
+                          }`}
+                        >
+                          {isCompleted ? "Completed" : isInProgress ? "In Progress" : "Pending"}
+                        </button>
+
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          icon="trash"
+                          onClick={() => handleDelete(m.id)}
+                          className="text-tertiary hover:text-status-danger"
+                          aria-label={`Delete ${m.title}`}
+                        />
+                      </div>
+                    </div>
+                  </li>
+                );
+              })
+            )}
+          </ol>
+        </div>
+      </Surface>
     </div>
   );
 }

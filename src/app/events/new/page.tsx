@@ -18,15 +18,15 @@ export default function NewEventPage() {
       <div className="mb-8">
         <Link
           href="/events"
-          className="text-sm font-medium text-primary-600 dark:text-primary-400 hover:underline inline-flex items-center gap-1.5 mb-3"
+          className="text-xs font-semibold text-secondary hover:text-primary transition-colors inline-flex items-center gap-1.5 mb-3"
         >
-          <Icon name="arrow-left" size="xs" aria-hidden="true" />
-          <span>Back to My Events</span>
+          <Icon name="arrow-left" size={14} aria-hidden />
+          <span>Back to saved plans</span>
         </Link>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-neutral-900 dark:text-neutral-100 font-display tracking-tight">
+        <h1 className="text-2xl sm:text-3xl font-bold text-primary font-display tracking-tight">
           Create New Event Plan
         </h1>
-        <p className="text-neutral-600 dark:text-neutral-400 text-sm mt-1">
+        <p className="text-secondary text-sm mt-1">
           Describe what you are planning and our assistant will build your structured plan.
         </p>
       </div>

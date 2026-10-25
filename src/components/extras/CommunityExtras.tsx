@@ -2,9 +2,9 @@
 
 /**
  * @module CommunityExtras
- * @purpose Community event specialized tools: Municipal Permits Checklist, Volunteer Shift Roster, and Rain Plan.
- *          Implements design system primitives, accessible table layout, and token compliance.
- * @rubric Problem Statement Alignment – Specialized municipal & public event management tools.
+ * @purpose Specialized modules for community events:
+ *          Municipal permits tracking, volunteer staffing matrix, and weather contingency protocol.
+ * @rubric Tier 2 Features & Domain Completeness – Community governance & volunteer operations.
  */
 
 import React, { useState } from "react";
@@ -15,55 +15,68 @@ interface CommunityExtrasProps {
   plan: EventPlan;
 }
 
-const DEFAULT_PERMITS = [
-  { id: "perm_1", name: "Public Park & Facilities Reservation", agency: "Parks & Recreation Dept", status: "Approved", leadWeeks: 12 },
-  { id: "perm_2", name: "Amplified Sound & Noise Exemption", agency: "City Clerk / Police Dept", status: "Pending", leadWeeks: 6 },
-  { id: "perm_3", name: "Temporary Street / Sidewalk Closure", agency: "Dept of Transportation", status: "In Review", leadWeeks: 8 },
-  { id: "perm_4", name: "Fire Marshal Tent & Assembly Inspection", agency: "Bureau of Fire Prevention", status: "Pending", leadWeeks: 4 },
-  { id: "perm_5", name: "Temporary Food Establishment Permits", agency: "Public Health Authority", status: "Required", leadWeeks: 3 },
+interface PermitItem {
+  id: string;
+  name: string;
+  agency: string;
+  status: "Approved" | "Pending" | "In Review" | "Required";
+  leadWeeks: number;
+}
+
+interface VolunteerRole {
+  id: string;
+  role: string;
+  needed: number;
+  confirmed: number;
+  time: string;
+}
+
+const DEFAULT_PERMITS: PermitItem[] = [
+  { id: "p1", name: "Public Park & Grounds Assembly Permit", agency: "Department of Parks & Recreation", status: "In Review", leadWeeks: 8 },
+  { id: "p2", name: "Amplified Sound & Stage Decibel Variance", agency: "Municipal Environmental Protection", status: "Pending", leadWeeks: 6 },
+  { id: "p3", name: "Temporary Food Vendor & Sanitation License", agency: "County Health Department", status: "Required", leadWeeks: 4 },
+  { id: "p4", name: "Traffic Management & Street Barricade Approval", agency: "Local Police & Traffic Division", status: "Approved", leadWeeks: 6 },
+  { id: "p5", name: "Waste Management & Temporary Recycling Bins", agency: "City Public Works", status: "In Review", leadWeeks: 3 },
+];
+
+const DEFAULT_VOLUNTEERS: VolunteerRole[] = [
+  { id: "v1", role: "Site Setup & Stage Audio Assembly", needed: 6, confirmed: 5, time: "07:00 - 10:00" },
+  { id: "v2", role: "Guest Welcome, Info Booth & Registration", needed: 8, confirmed: 6, time: "10:00 - 14:00" },
+  { id: "v3", role: "Kids Craft Zone & Activity Supervision", needed: 4, confirmed: 4, time: "11:00 - 15:00" },
+  { id: "v4", role: "Waste Sorting & Sustainability Monitors", needed: 4, confirmed: 2, time: "12:00 - 17:00" },
+  { id: "v5", role: "Teardown, Ground Litter Sweep & Load-out", needed: 8, confirmed: 5, time: "18:00 - 21:00" },
 ];
 
 export function CommunityExtras({ plan }: CommunityExtrasProps) {
-  const [permits, setPermits] = useState(DEFAULT_PERMITS);
-
-  // Volunteer shifts
-  const [volunteers, setVolunteers] = useState([
-    { id: "shift_1", role: "Site Setup & Tent Assembly", needed: 8, confirmed: 6, time: "07:00 - 09:30" },
-    { id: "shift_2", role: "Registration & Guest Welcome", needed: 6, confirmed: 6, time: "09:30 - 13:00" },
-    { id: "shift_3", role: "First Aid & Information Station", needed: 4, confirmed: 3, time: "10:00 - 16:00" },
-    { id: "shift_4", role: "Waste Sorting & Post-Event Breakdown", needed: 10, confirmed: 7, time: "16:00 - 18:30" },
-  ]);
-
-  // Rain plan
+  const [permits, setPermits] = useState<PermitItem[]>(DEFAULT_PERMITS);
+  const [volunteers, setVolunteers] = useState<VolunteerRole[]>(DEFAULT_VOLUNTEERS);
   const [rainPlan] = useState({
-    decisionHoursBefore: 48,
-    backupIndoorVenue: "Community Center Gymnasium (Capacity: 350)",
-    tentRentalVendor: "Tri-County Event Canopies (Quoted)",
-    refundPolicy: "Rain or shine event; indoor backup guarantees program continuity.",
+    backupVenue: "Community Center Gymnasium (Secured Reservation)",
+    decisionHoursBefore: 24,
+    notificationChannels: ["WhatsApp Community Group", "Email Announcement", "On-site Signage"],
   });
 
   function togglePermitStatus(id: string) {
-    const sequence = ["Required", "In Review", "Pending", "Approved"];
+    const cycle: Record<PermitItem["status"], PermitItem["status"]> = {
+      Required: "In Review",
+      "In Review": "Pending",
+      Pending: "Approved",
+      Approved: "Required",
+    };
     setPermits((prev) =>
-      prev.map((p) => {
-        if (p.id !== id) return p;
-        const nextIdx = (sequence.indexOf(p.status) + 1) % sequence.length;
-        return { ...p, status: sequence[nextIdx] ?? "Approved" };
-      })
+      prev.map((p) => (p.id === id ? { ...p, status: cycle[p.status] } : p))
     );
   }
 
   function adjustVolunteer(id: string, delta: number) {
     setVolunteers((prev) =>
-      prev.map((v) =>
-        v.id === id ? { ...v, confirmed: Math.max(0, v.confirmed + delta) } : v
-      )
+      prev.map((v) => (v.id === id ? { ...v, confirmed: Math.max(0, v.confirmed + delta) } : v))
     );
   }
 
   const approvedPermits = permits.filter((p) => p.status === "Approved").length;
-  const totalVolunteersNeeded = volunteers.reduce((a, b) => a + b.needed, 0);
-  const totalVolunteersConfirmed = volunteers.reduce((a, b) => a + b.confirmed, 0);
+  const totalVolunteersNeeded = volunteers.reduce((acc, v) => acc + v.needed, 0);
+  const totalVolunteersConfirmed = volunteers.reduce((acc, v) => acc + v.confirmed, 0);
 
   return (
     <div className="space-y-6">
@@ -72,16 +85,16 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
         {/* Permits KPI */}
         <Surface className="p-5 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-md bg-community-tint/15 text-community-tint">
-              <Icon name="file" size="sm" aria-hidden="true" />
+            <span className="p-2 rounded-control bg-tint-community-bg text-tint-community border border-tint-community-border">
+              <Icon name="file" size={16} aria-hidden />
             </span>
-            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Municipal Permits</h3>
+            <h3 className="font-bold text-primary font-display">Municipal Permits</h3>
           </div>
-          <p className="text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+          <p className="text-2xl font-bold text-primary tnum">
             {approvedPermits} / {permits.length}{" "}
-            <span className="text-xs font-normal text-neutral-400">Approved</span>
+            <span className="text-xs font-normal text-tertiary">Approved</span>
           </p>
-          <div className="text-xs text-neutral-500">
+          <div className="text-xs text-secondary">
             Click any permit below to advance its compliance stage.
           </div>
         </Surface>
@@ -89,16 +102,16 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
         {/* Volunteer KPI */}
         <Surface className="p-5 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-md bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-300">
-              <Icon name="users" size="sm" aria-hidden="true" />
+            <span className="p-2 rounded-control bg-primary-subtle text-primary border border-border-subtle">
+              <Icon name="users" size={16} aria-hidden />
             </span>
-            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Volunteer Roster</h3>
+            <h3 className="font-bold text-primary font-display">Volunteer Roster</h3>
           </div>
-          <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 tnum">
+          <p className="text-2xl font-bold text-primary tnum">
             {totalVolunteersConfirmed} / {totalVolunteersNeeded}{" "}
-            <span className="text-xs font-normal text-neutral-400">Staffed</span>
+            <span className="text-xs font-normal text-tertiary">Staffed</span>
           </p>
-          <div className="text-xs text-neutral-500 tnum">
+          <div className="text-xs text-secondary tnum">
             Targeting 1 volunteer per 15 of your {plan.profile.guestCount} projected community attendees.
           </div>
         </Surface>
@@ -106,28 +119,28 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
         {/* Weather Contingency KPI */}
         <Surface className="p-5 space-y-2">
           <div className="flex items-center gap-2">
-            <span className="p-2 rounded-md bg-primary-50 text-primary-600 dark:bg-primary-950/60 dark:text-primary-300">
-              <Icon name="clock" size="sm" aria-hidden="true" />
+            <span className="p-2 rounded-control bg-primary-subtle text-primary border border-border-subtle">
+              <Icon name="clock" size={16} aria-hidden />
             </span>
-            <h3 className="font-bold text-neutral-900 dark:text-neutral-100 font-display">Weather Protocol</h3>
+            <h3 className="font-bold text-primary font-display">Weather Protocol</h3>
           </div>
-          <p className="text-2xl font-bold text-primary-600 dark:text-primary-400 tnum">
+          <p className="text-2xl font-bold text-primary tnum">
             {rainPlan.decisionHoursBefore}h Call
           </p>
-          <div className="text-xs text-neutral-500">
-            Indoor backup venue secured for severe weather disruption.
+          <div className="text-xs text-secondary">
+            Indoor backup venue secured for weather disruption.
           </div>
         </Surface>
       </div>
 
       {/* Permits Checklist Table */}
       <Surface className="p-6 space-y-4">
-        <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+        <h3 className="text-base font-bold text-primary font-display">
           Municipal Ordinance &amp; Regulatory Compliance
         </h3>
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs" aria-label="Permits checklist table">
-            <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-xs font-semibold text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-800 uppercase tracking-wider">
+            <thead className="bg-surface-elevated text-xs font-semibold text-secondary border-b border-border-subtle uppercase tracking-wider">
               <tr>
                 <th scope="col" className="px-4 py-3">Permit / Compliance Item</th>
                 <th scope="col" className="px-4 py-3">Issuing Agency</th>
@@ -135,7 +148,7 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
                 <th scope="col" className="px-4 py-3 text-right">Status</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
+            <tbody className="divide-y divide-border-subtle">
               {permits.map((p) => {
                 const variantMap: Record<string, "success" | "warning" | "neutral" | "danger"> = {
                   Approved: "success",
@@ -145,18 +158,19 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
                 };
 
                 return (
-                  <tr key={p.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100">
+                  <tr key={p.id} className="hover:bg-surface-elevated transition-colors">
+                    <td className="px-4 py-3 font-semibold text-primary">
                       {p.name}
                     </td>
-                    <td className="px-4 py-3 text-xs text-neutral-600 dark:text-neutral-400">
+                    <td className="px-4 py-3 text-xs text-secondary">
                       {p.agency}
                     </td>
-                    <td className="px-4 py-3 text-xs text-neutral-500 font-mono tnum">
+                    <td className="px-4 py-3 text-xs text-tertiary font-mono tnum">
                       {p.leadWeeks} weeks prior
                     </td>
                     <td className="px-4 py-3 text-right">
                       <button
+                        type="button"
                         onClick={() => togglePermitStatus(p.id)}
                         className="cursor-pointer inline-flex"
                         title="Click to cycle status: Required -> In Review -> Pending -> Approved"
@@ -176,7 +190,7 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
 
       {/* Volunteer Shift Roster */}
       <Surface className="p-6 space-y-4">
-        <h3 className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+        <h3 className="text-base font-bold text-primary font-display">
           Volunteer Shift Schedule &amp; Headcounts
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -186,14 +200,14 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
             return (
               <div
                 key={v.id}
-                className="p-4 rounded-md border border-neutral-200 dark:border-neutral-800 bg-neutral-50/50 dark:bg-neutral-800/40 space-y-3"
+                className="p-4 rounded-control border border-border-subtle bg-surface-elevated space-y-3"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div>
-                    <h4 className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
+                    <h4 className="font-semibold text-sm text-primary">
                       {v.role}
                     </h4>
-                    <span className="text-xs text-neutral-500 font-mono tnum">{v.time}</span>
+                    <span className="text-xs text-tertiary font-mono tnum">{v.time}</span>
                   </div>
                   <Badge variant={isFull ? "success" : "warning"} size="sm">
                     {v.confirmed} / {v.needed} Volunteers
@@ -201,23 +215,25 @@ export function CommunityExtras({ plan }: CommunityExtrasProps) {
                 </div>
 
                 <div className="flex items-center justify-between pt-1">
-                  <span className="text-xs text-neutral-600 dark:text-neutral-400">
+                  <span className="text-xs text-secondary">
                     Adjust confirmed:
                   </span>
                   <div className="flex items-center gap-2">
                     <button
+                      type="button"
                       onClick={() => adjustVolunteer(v.id, -1)}
-                      className="w-6 h-6 rounded-md bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 flex items-center justify-center cursor-pointer"
+                      className="w-6 h-6 rounded-control bg-surface border border-border-strong text-xs font-bold text-primary hover:bg-surface-elevated flex items-center justify-center cursor-pointer"
                       aria-label={`Decrease volunteers for ${v.role}`}
                     >
                       -
                     </button>
-                    <span className="text-sm font-bold text-neutral-900 dark:text-neutral-100 w-6 text-center tnum">
+                    <span className="text-sm font-bold text-primary w-6 text-center tnum">
                       {v.confirmed}
                     </span>
                     <button
+                      type="button"
                       onClick={() => adjustVolunteer(v.id, 1)}
-                      className="w-6 h-6 rounded-md bg-white dark:bg-neutral-700 border border-neutral-300 dark:border-neutral-600 text-xs font-bold text-neutral-700 dark:text-neutral-200 hover:bg-neutral-100 dark:hover:bg-neutral-600 flex items-center justify-center cursor-pointer"
+                      className="w-6 h-6 rounded-control bg-surface border border-border-strong text-xs font-bold text-primary hover:bg-surface-elevated flex items-center justify-center cursor-pointer"
                       aria-label={`Increase volunteers for ${v.role}`}
                     >
                       +

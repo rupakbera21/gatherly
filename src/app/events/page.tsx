@@ -97,12 +97,15 @@ export default function EventsPage() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between">
           <Link
             href="/"
-            className="flex items-center gap-2 text-base font-bold font-display text-primary no-underline tracking-tight"
+            className="flex items-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary rounded-control"
+            aria-label="Gatherly Home"
           >
-            <div className="w-7 h-7 rounded-control bg-primary text-white flex items-center justify-center font-bold text-xs">
-              G
-            </div>
-            <span>Gatherly</span>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img
+              src="/logo.png"
+              alt="Gatherly Logo"
+              className="h-8 w-auto object-contain"
+            />
           </Link>
           <div className="flex items-center gap-3">
             <Link

@@ -76,19 +76,16 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
 
   const nextActions = plan.milestones
     .filter((m) => m.status !== "completed")
+    .sort((a, b) => a.dueDate.localeCompare(b.dueDate))
     .slice(0, 3);
 
-  // Vendors status
+  // Vendor summary
   const bookedVendors = plan.vendors.filter((v) => v.status === "booked").length;
   const totalVendors = plan.vendors.length;
 
-  /**
-   * Parallel module generation with concurrency cap (Section 5.2.7)
-   */
   async function handleGenerateFullPlan() {
     if (!plan) return;
     setIsGeneratingAll(true);
-    announce("Generation started. Building complete event plan...");
     setGenerationStatus({
       budget: "loading",
       timeline: "loading",
@@ -197,12 +194,12 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
     <div className="space-y-6">
       {/* Brand New Plan Initial Generation Banner */}
       {isBrandNewPlan && (
-        <Surface variant="elevated" className="p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-l-4 border-l-primary-600">
+        <Surface variant="elevated" className="p-6 sm:p-8 flex flex-col md:flex-row items-start md:items-center justify-between gap-6 border-l-4 border-l-primary">
           <div>
-            <h2 className="text-xl font-bold text-neutral-900 dark:text-neutral-100 font-display">
+            <h2 className="text-xl font-bold text-primary font-display">
               Generate Your Complete Event Plan
             </h2>
-            <p className="text-sm text-neutral-600 dark:text-neutral-400 mt-1 max-w-xl">
+            <p className="text-sm text-secondary mt-1 max-w-xl">
               One click builds your tailored budget allocation, backward-planned milestones, vendor checklist, and personalized ideas concurrently.
             </p>
           </div>
@@ -224,37 +221,37 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
         {/* Budget Health */}
         <Surface className="p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-secondary mb-2">
               <span className="uppercase tracking-wider">Budget Health</span>
-              <Link href={`/plan/${eventId}/budget`} className="text-primary-600 dark:text-primary-400 hover:underline">
+              <Link href={`/plan/${eventId}/budget`} className="text-primary hover:underline">
                 View
               </Link>
             </div>
-            <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+            <div className="text-xl font-bold text-primary tnum">
               {formatCurrency(totalSpent, plan.profile.currency)}
             </div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5 tnum">
+            <div className="text-xs text-secondary mt-0.5 tnum">
               of {formatCurrency(plan.profile.budgetMinor, plan.profile.currency)} total
             </div>
           </div>
           <div className="mt-4">
-            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-surface-elevated rounded-full h-2 overflow-hidden border border-border-subtle">
               <div
                 className={`h-2 rounded-full transition-all ${
-                  totalSpent > plan.profile.budgetMinor ? "bg-danger" : "bg-success"
+                  totalSpent > plan.profile.budgetMinor ? "bg-status-danger" : "bg-status-success"
                 }`}
                 style={{ width: `${budgetUtilization}%` }}
               />
             </div>
             <div className="mt-2 text-xs font-semibold flex items-center gap-1.5">
               {totalSpent > plan.profile.budgetMinor ? (
-                <span className="text-danger inline-flex items-center gap-1">
-                  <Icon name="alert-triangle" size="xs" aria-hidden="true" />
+                <span className="text-status-danger inline-flex items-center gap-1">
+                  <Icon name="alert-triangle" size={14} aria-hidden />
                   <span>Over Budget</span>
                 </span>
               ) : (
-                <span className="text-success inline-flex items-center gap-1">
-                  <Icon name="check" size="xs" aria-hidden="true" />
+                <span className="text-status-success inline-flex items-center gap-1">
+                  <Icon name="check" size={14} aria-hidden />
                   <span>On Budget</span>
                 </span>
               )}
@@ -265,27 +262,27 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
         {/* Timeline Progress */}
         <Surface className="p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-secondary mb-2">
               <span className="uppercase tracking-wider">Milestones</span>
-              <Link href={`/plan/${eventId}/timeline`} className="text-primary-600 dark:text-primary-400 hover:underline">
+              <Link href={`/plan/${eventId}/timeline`} className="text-primary hover:underline">
                 View
               </Link>
             </div>
-            <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+            <div className="text-xl font-bold text-primary tnum">
               {completedMilestones} of {totalMilestones}
             </div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            <div className="text-xs text-secondary mt-0.5">
               completed
             </div>
           </div>
           <div className="mt-4">
-            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-surface-elevated rounded-full h-2 overflow-hidden border border-border-subtle">
               <div
-                className="h-2 rounded-full bg-primary-600 transition-all"
+                className="h-2 rounded-full bg-primary transition-all"
                 style={{ width: `${milestoneProgress}%` }}
               />
             </div>
-            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 tnum">
+            <div className="mt-2 text-xs text-secondary tnum">
               {milestoneProgress}% complete
             </div>
           </div>
@@ -294,29 +291,29 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
         {/* Vendors Booked */}
         <Surface className="p-5 flex flex-col justify-between">
           <div>
-            <div className="flex items-center justify-between text-xs font-semibold text-neutral-500 dark:text-neutral-400 mb-2">
+            <div className="flex items-center justify-between text-xs font-semibold text-secondary mb-2">
               <span className="uppercase tracking-wider">Vendors</span>
-              <Link href={`/plan/${eventId}/vendors`} className="text-primary-600 dark:text-primary-400 hover:underline">
+              <Link href={`/plan/${eventId}/vendors`} className="text-primary hover:underline">
                 View
               </Link>
             </div>
-            <div className="text-xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
+            <div className="text-xl font-bold text-primary tnum">
               {bookedVendors} of {totalVendors}
             </div>
-            <div className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            <div className="text-xs text-secondary mt-0.5">
               booked
             </div>
           </div>
           <div className="mt-4">
-            <div className="w-full bg-neutral-100 dark:bg-neutral-800 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-surface-elevated rounded-full h-2 overflow-hidden border border-border-subtle">
               <div
-                className="h-2 rounded-full bg-primary-600 transition-all"
+                className="h-2 rounded-full bg-primary transition-all"
                 style={{
                   width: `${totalVendors > 0 ? Math.round((bookedVendors / totalVendors) * 100) : 0}%`,
                 }}
               />
             </div>
-            <div className="mt-2 text-xs text-neutral-500 dark:text-neutral-400 tnum">
+            <div className="mt-2 text-xs text-secondary tnum">
               {totalVendors - bookedVendors} pending decisions
             </div>
           </div>
@@ -350,52 +347,52 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
       </div>
 
       {/* Hero Element: Time-Ordered Cue List / Run Sheet ("Next Up") */}
-      <section className="bg-white dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 rounded-lg p-6 shadow-xs space-y-4" aria-labelledby="cue-sheet-heading">
-        <div className="flex items-center justify-between pb-3 border-b border-neutral-100 dark:border-neutral-800">
+      <Surface className="p-6 space-y-4" aria-labelledby="cue-sheet-heading">
+        <div className="flex items-center justify-between pb-3 border-b border-border-subtle">
           <div>
-            <h3 id="cue-sheet-heading" className="text-base font-bold text-neutral-900 dark:text-neutral-100 font-display">
+            <h3 id="cue-sheet-heading" className="text-base font-bold text-primary font-display">
               Production Cue Sheet: Next Milestones
             </h3>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mt-0.5">
+            <p className="text-xs text-secondary mt-0.5">
               Operational call-order based on schedule dependencies and target dates.
             </p>
           </div>
           <Link
             href={`/plan/${eventId}/timeline`}
-            className="text-xs font-semibold text-primary-600 dark:text-primary-400 hover:underline"
+            className="text-xs font-semibold text-primary hover:underline"
           >
             Full timeline
           </Link>
         </div>
 
         {nextActions.length === 0 ? (
-          <div className="text-center py-10 text-xs text-neutral-500 dark:text-neutral-400">
+          <div className="text-center py-10 text-xs text-secondary">
             {totalMilestones === 0
               ? "No milestones generated yet. Use the full plan button above to generate a timeline."
               : "All scheduled milestones completed."}
           </div>
         ) : (
-          <div className="divide-y divide-neutral-100 dark:divide-neutral-800">
+          <div className="divide-y divide-border-subtle">
             {nextActions.map((action, idx) => (
               <div
                 key={action.id}
-                className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-neutral-50 dark:hover:bg-neutral-800/40 px-2 rounded-md transition-colors"
+                className="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:bg-surface-elevated px-2 rounded-control transition-colors"
               >
                 <div className="flex items-start gap-3">
-                  <span className="w-6 h-6 rounded-md bg-neutral-100 dark:bg-neutral-800 text-neutral-700 dark:text-neutral-300 text-xs font-bold flex items-center justify-center shrink-0 tnum font-mono">
+                  <span className="w-6 h-6 rounded-control bg-surface-elevated text-primary text-xs font-bold flex items-center justify-center shrink-0 tnum font-mono border border-border-subtle">
                     {String(idx + 1).padStart(2, "0")}
                   </span>
                   <div>
-                    <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100">
+                    <h4 className="text-sm font-semibold text-primary">
                       {action.title}
                     </h4>
-                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                    <p className="text-xs text-secondary">
                       Category: {action.category} {action.notes && `· ${action.notes}`}
                     </p>
                   </div>
                 </div>
                 <div className="flex items-center gap-3 self-end sm:self-center">
-                  <span className="text-xs font-medium text-neutral-600 dark:text-neutral-300 font-mono tnum">
+                  <span className="text-xs font-medium text-secondary font-mono tnum">
                     Due: {action.dueDate}
                   </span>
                   {action.isCriticalPath && (
@@ -408,7 +405,7 @@ export default function PlanOverviewPage({ params }: OverviewPageProps) {
             ))}
           </div>
         )}
-      </section>
+      </Surface>
 
       {/* Re-generate or Refresh Options */}
       {!isBrandNewPlan && (

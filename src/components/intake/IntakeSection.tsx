@@ -25,25 +25,25 @@ const EXAMPLE_PROMPTS: ExamplePrompt[] = [
   {
     icon: "wedding",
     label: "120-Guest Wedding",
-    text: "Planning a 120-guest multicultural wedding in Chicago next June. Two functions (Ceremony and Reception) with a $35,000 budget. Need accommodation assistance for out-of-town guests.",
+    text: "Planning a 120-guest wedding in Bengaluru next November with a ₹25,00,000 budget. Two functions (Sangeet and Reception) with guest accommodation and catering management.",
   },
   {
     icon: "birthday",
     label: "7th Birthday Party",
-    text: "7th birthday superhero themed party for 25 kids at a local park pavilion next month. $800 budget. Note: peanut allergy considerations and need an entertainer.",
+    text: "7th birthday celebration for 30 kids at an indoor arena in Pune next month. ₹35,000 budget. Needs entertainer, allergen-safe snacks, and custom cake.",
   },
   {
     icon: "community",
     label: "Community Summer Fair",
-    text: "Free neighborhood summer arts fair for 500 attendees in late July. $12,000 budget from municipal grants and local sponsors. Needs city park permit, stage sound system, and 15 volunteers.",
+    text: "Neighborhood community festival for 600 attendees in Delhi this winter. ₹4,50,000 budget from grants and sponsors. Needs ground permit, stage audio system, and 20 volunteers.",
   },
 ];
 
 const CURRENCY_OPTIONS = [
+  { value: "INR", label: "INR (₹)" },
   { value: "USD", label: "USD ($)" },
   { value: "EUR", label: "EUR (€)" },
   { value: "GBP", label: "GBP (£)" },
-  { value: "INR", label: "INR (₹)" },
   { value: "JPY", label: "JPY (¥)" },
   { value: "CAD", label: "CAD ($)" },
   { value: "AUD", label: "AUD ($)" },
@@ -64,7 +64,7 @@ export function IntakeSection() {
 
   const [description, setDescription] = useState("");
   const [language, setLanguage] = useState("en");
-  const [currency, setCurrency] = useState("USD");
+  const [currency, setCurrency] = useState("INR");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
@@ -148,7 +148,7 @@ export function IntakeSection() {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               maxLength={2000}
-              placeholder="e.g. Planning a 150-guest garden wedding in Napa Valley next October with a $40,000 budget..."
+              placeholder="e.g. Planning a 150-guest wedding in Bengaluru next November with a ₹25,00,000 budget..."
               className="w-full p-4 rounded-control border border-border-strong bg-surface text-primary placeholder:text-tertiary focus:outline-none focus:border-primary text-base resize-y transition-colors"
               required
               aria-describedby={errorMsg ? "intake-error" : "char-counter"}

@@ -15,7 +15,7 @@ import { exportVendorsCsv } from "@/domain/csv";
 import { formatCurrency, toMinorUnits } from "@/domain/money";
 import { VendorItem } from "@/domain/types";
 import { useGatherlyStore } from "@/store";
-import { Button, Icon, Badge, Surface, Input } from "@/components/ui";
+import { Button, Badge, Surface, Input } from "@/components/ui";
 
 interface VendorsPageProps {
   params: Promise<{ id: string }>;
@@ -146,408 +146,427 @@ export default function PlanVendorsPage({ params }: VendorsPageProps) {
 
   return (
     <div className="space-y-6">
-      {/* Header & Controls */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-display">
-            Vendor Pipeline
-          </h2>
-          <p className="text-sm text-neutral-600 dark:text-neutral-400">
-            Source vendors, compare quotes, track lead-time constraints, and log bookings.
-          </p>
-        </div>
+      {/* Master Surface */}
+      <Surface variant="default" className="border border-border-subtle overflow-hidden shadow-xs">
+        {/* Header & Controls */}
+        <div className="p-5 sm:p-6 border-b border-border-subtle bg-surface">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-xs font-bold uppercase tracking-wider text-secondary">
+                  Vendor Pipeline & Sourcing
+                </span>
+                <Badge variant="neutral" size="sm">
+                  {bookedCount} of {vendors.length} booked
+                </Badge>
+              </div>
+              <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-primary font-display">
+                Vendor Directory & Pipeline
+              </h2>
+              <p className="text-xs sm:text-sm text-secondary mt-0.5">
+                Source vendors, compare quotes, track lead-time constraints, and log bookings.
+              </p>
+            </div>
 
-        <div className="flex flex-wrap items-center gap-2">
-          {/* View Mode Toggle */}
-          <div className="flex rounded-md border border-neutral-200 dark:border-neutral-800 p-0.5 bg-neutral-100 dark:bg-neutral-900">
-            <button
-              onClick={() => setViewMode("kanban")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                viewMode === "kanban"
-                  ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs"
-                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
-              }`}
-            >
-              Board
-            </button>
-            <button
-              onClick={() => setViewMode("table")}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-md transition-colors ${
-                viewMode === "table"
-                  ? "bg-white dark:bg-neutral-800 text-neutral-900 dark:text-neutral-100 shadow-2xs"
-                  : "text-neutral-600 dark:text-neutral-400 hover:text-neutral-900"
-              }`}
-            >
-              Table
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              {/* View Mode Toggle */}
+              <div className="flex rounded-control border border-border-strong p-0.5 bg-surface-elevated">
+                <button
+                  type="button"
+                  onClick={() => setViewMode("kanban")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-control transition-colors cursor-pointer ${
+                    viewMode === "kanban"
+                      ? "bg-surface text-primary shadow-xs"
+                      : "text-secondary hover:text-primary"
+                  }`}
+                >
+                  Board
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setViewMode("table")}
+                  className={`px-3 py-1 text-xs font-semibold rounded-control transition-colors cursor-pointer ${
+                    viewMode === "table"
+                      ? "bg-surface text-primary shadow-xs"
+                      : "text-secondary hover:text-primary"
+                  }`}
+                >
+                  Table
+                </button>
+              </div>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="download"
+                onClick={handleExportCsv}
+                title="Export vendor list to CSV"
+              >
+                Export CSV
+              </Button>
+
+              <Button
+                variant="secondary"
+                size="sm"
+                icon="sparkles"
+                onClick={handleRegenerateVendors}
+                isLoading={isRegenerating}
+                disabled={isRegenerating}
+              >
+                {isRegenerating ? "Regenerating..." : "Regenerate AI"}
+              </Button>
+
+              <Button
+                variant="primary"
+                size="sm"
+                icon="plus"
+                onClick={() => setIsAddOpen(true)}
+              >
+                Add vendor
+              </Button>
+            </div>
           </div>
 
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="download"
-            onClick={handleExportCsv}
-            title="Export vendor list to CSV"
-          >
-            Export CSV
-          </Button>
-
-          <Button
-            variant="secondary"
-            size="sm"
-            icon="sparkles"
-            onClick={handleRegenerateVendors}
-            isLoading={isRegenerating}
-            disabled={isRegenerating}
-          >
-            {isRegenerating ? "Regenerating..." : "Regenerate AI"}
-          </Button>
-
-          <Button
-            variant="primary"
-            size="sm"
-            icon="plus"
-            onClick={() => setIsAddOpen(true)}
-          >
-            Add Vendor
-          </Button>
-        </div>
-      </div>
-
-      {/* Summary KPI Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Total Vendors</p>
-          <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">{vendors.length}</p>
-        </Surface>
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Booked</p>
-          <p className="mt-1 text-2xl font-bold text-success tnum">
-            {bookedCount} <span className="text-xs font-normal text-neutral-400">({vendors.length ? Math.round((bookedCount / vendors.length) * 100) : 0}%)</span>
-          </p>
-        </Surface>
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 uppercase tracking-wider">Estimated Total</p>
-          <p className="mt-1 text-2xl font-bold text-neutral-900 dark:text-neutral-100 tnum">
-            {formatCurrency(totalEstCostMinor, currency)}
-          </p>
-        </Surface>
-        <Surface className="p-4">
-          <p className="text-xs font-medium text-primary-600 dark:text-primary-400 uppercase tracking-wider">Committed / Booked</p>
-          <p className="mt-1 text-2xl font-bold text-primary-600 dark:text-primary-400 tnum">
-            {formatCurrency(totalActualCostMinor, currency)}
-          </p>
-        </Surface>
-      </div>
-
-      {/* Lead Time Alert Banner if tight */}
-      {weeksUntilEvent <= 8 && (
-        <div className="p-4 rounded-md bg-primary-50 dark:bg-primary-950/40 border border-primary-200 dark:border-primary-900 text-primary-900 dark:text-primary-300 text-sm flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <Icon name="clock" size="sm" className="text-primary-600 shrink-0" aria-hidden="true" />
-            <div>
-              <span className="font-semibold">Event is {weeksUntilEvent} weeks away.</span> High lead-time vendors requiring 8+ weeks are flagged below.
+          {/* Summary Metric Strip */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-5 pt-4 border-t border-border-subtle">
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wider">Total vendors</span>
+              <p className="mt-1 text-xl font-bold text-primary tnum">{vendors.length}</p>
+            </div>
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wider">Booked</span>
+              <p className="mt-1 text-xl font-bold text-status-success tnum">
+                {bookedCount} <span className="text-xs font-normal text-tertiary">({vendors.length ? Math.round((bookedCount / vendors.length) * 100) : 0}%)</span>
+              </p>
+            </div>
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-secondary uppercase tracking-wider">Estimated total</span>
+              <p className="mt-1 text-xl font-bold text-primary tnum">
+                {formatCurrency(totalEstCostMinor, currency)}
+              </p>
+            </div>
+            <div className="p-3 bg-surface-elevated rounded-control border border-border-subtle">
+              <span className="text-xs font-medium text-primary uppercase tracking-wider">Committed / Booked</span>
+              <p className="mt-1 text-xl font-bold text-primary tnum">
+                {formatCurrency(totalActualCostMinor, currency)}
+              </p>
             </div>
           </div>
         </div>
-      )}
 
-      {/* Add Vendor Modal */}
-      {isAddOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-neutral-950/60 backdrop-blur-xs p-4">
-          <div className="bg-white dark:bg-neutral-900 rounded-lg border border-neutral-200 dark:border-neutral-800 shadow-xl max-w-md w-full p-6 space-y-4">
-            <h3 className="text-lg font-bold text-neutral-900 dark:text-neutral-100 font-display">Add New Vendor</h3>
-            <form onSubmit={handleAddVendor} className="space-y-4">
-              <div>
-                <label htmlFor="new-vendor-name" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Vendor / Service Name *
-                </label>
-                <Input
-                  id="new-vendor-name"
-                  type="text"
-                  required
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  placeholder="e.g., Grand Ballroom Rentals"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-3">
+        {/* Modal: Add Vendor */}
+        {isAddOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4">
+            <div className="bg-surface rounded-surface border border-border-strong shadow-overlay max-w-md w-full p-6 space-y-4">
+              <h3 className="text-lg font-bold text-primary font-display">Add New Vendor</h3>
+              <form onSubmit={handleAddVendor} className="space-y-3">
                 <div>
-                  <label htmlFor="new-vendor-category" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Category
+                  <label htmlFor="new-vendor-name" className="block text-xs font-semibold text-primary mb-1">
+                    Vendor or Business Name *
                   </label>
                   <Input
-                    id="new-vendor-category"
-                    type="text"
-                    value={newCategory}
-                    onChange={(e) => setNewCategory(e.target.value)}
-                    placeholder="Venue, Catering, Audio"
+                    id="new-vendor-name"
+                    value={newName}
+                    onChange={(e) => setNewName(e.target.value)}
+                    placeholder="e.g. Royal Blooms Floral Design"
+                    required
                   />
                 </div>
-                <div>
-                  <label htmlFor="new-vendor-est-cost" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                    Estimated Cost ({currency})
-                  </label>
-                  <Input
-                    id="new-vendor-est-cost"
-                    type="number"
-                    min="0"
-                    step="any"
-                    value={newEstCost}
-                    onChange={(e) => setNewEstCost(e.target.value)}
-                    placeholder="0.00"
-                  />
-                </div>
-              </div>
 
-              <div>
-                <label htmlFor="new-vendor-lead-weeks" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Lead Time (Weeks needed to book)
-                </label>
-                <Input
-                  id="new-vendor-lead-weeks"
-                  type="number"
-                  min="0"
-                  max="104"
-                  value={newLeadWeeks}
-                  onChange={(e) => setNewLeadWeeks(e.target.value)}
-                  placeholder="e.g., 8"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="new-vendor-notes" className="block text-xs font-semibold text-neutral-700 dark:text-neutral-300 mb-1">
-                  Notes / Package Info
-                </label>
-                <textarea
-                  id="new-vendor-notes"
-                  rows={2}
-                  value={newNotes}
-                  onChange={(e) => setNewNotes(e.target.value)}
-                  placeholder="Includes sound engineer, 4 mics..."
-                  className="w-full text-xs rounded-md border border-neutral-300 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-3 py-2 text-neutral-900 dark:text-neutral-100 focus:outline-hidden focus:ring-2 focus:ring-primary-500"
-                />
-              </div>
-
-              <div className="flex justify-end gap-2 pt-2">
-                <Button
-                  type="button"
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => setIsAddOpen(false)}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  type="submit"
-                  variant="primary"
-                  size="sm"
-                >
-                  Add Vendor
-                </Button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
-
-      {/* Main Content: Kanban or Table */}
-      {viewMode === "kanban" ? (
-        <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          {PIPELINE_COLUMNS.map((col) => {
-            const items = vendors.filter((v) => v.status === col.id);
-
-            return (
-              <div
-                key={col.id}
-                className="flex flex-col rounded-md bg-neutral-50 dark:bg-neutral-900/40 border border-neutral-200 dark:border-neutral-800 p-3 min-h-96"
-              >
-                {/* Column Header */}
-                <div className="flex items-center justify-between pb-3 mb-3 border-b border-neutral-200 dark:border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm text-neutral-900 dark:text-neutral-100">
-                      {col.label}
-                    </span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-white dark:bg-neutral-800 text-neutral-600 dark:text-neutral-300 border border-neutral-200 dark:border-neutral-700 tnum">
-                      {items.length}
-                    </span>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label htmlFor="new-vendor-category" className="block text-xs font-semibold text-primary mb-1">
+                      Category
+                    </label>
+                    <Input
+                      id="new-vendor-category"
+                      value={newCategory}
+                      onChange={(e) => setNewCategory(e.target.value)}
+                      placeholder="e.g. Florals"
+                    />
+                  </div>
+                  <div>
+                    <label htmlFor="new-vendor-est-cost" className="block text-xs font-semibold text-primary mb-1">
+                      Estimated Cost ({currency})
+                    </label>
+                    <Input
+                      id="new-vendor-est-cost"
+                      type="number"
+                      step="any"
+                      min="0"
+                      value={newEstCost}
+                      onChange={(e) => setNewEstCost(e.target.value)}
+                      placeholder="0.00"
+                    />
                   </div>
                 </div>
 
-                {/* Cards List */}
-                <div className="space-y-3 flex-1 overflow-y-auto">
-                  {items.length === 0 ? (
-                    <div className="text-center py-8 text-xs text-neutral-400">
-                      No vendors in this stage
-                    </div>
-                  ) : (
-                    items.map((item) => {
-                      const isLeadTimeRisk =
-                        item.status !== "booked" &&
-                        item.leadTimeWeeks !== undefined &&
-                        item.leadTimeWeeks > weeksUntilEvent;
-
-                      return (
-                        <div
-                          key={item.id}
-                          className="p-3 rounded-md border border-neutral-200 dark:border-neutral-800 bg-white dark:bg-neutral-900 shadow-2xs hover:shadow-xs transition-shadow space-y-2"
-                        >
-                          <div className="flex items-start justify-between gap-2">
-                            <div>
-                              <span className="text-xs font-semibold text-primary-600 dark:text-primary-400">
-                                {item.category}
-                              </span>
-                              <h4 className="text-sm font-semibold text-neutral-900 dark:text-neutral-100 leading-tight">
-                                {item.name}
-                              </h4>
-                            </div>
-                            <Button
-                              variant="ghost"
-                              size="sm"
-                              icon="trash"
-                              onClick={() => handleDelete(item.id)}
-                              className="text-neutral-400 hover:text-danger hover:bg-danger-surface"
-                              aria-label={`Delete ${item.name}`}
-                            />
-                          </div>
-
-                          {/* Cost & Lead time */}
-                          <div className="flex flex-wrap items-center gap-2 text-xs text-neutral-600 dark:text-neutral-400">
-                            {item.estimatedCostMinor !== undefined && (
-                              <span className="font-medium text-neutral-800 dark:text-neutral-200 font-mono tnum">
-                                {formatCurrency(item.estimatedCostMinor, currency)}
-                              </span>
-                            )}
-                            {item.leadTimeWeeks !== undefined && (
-                              <Badge
-                                variant={isLeadTimeRisk ? "danger" : "neutral"}
-                                size="sm"
-                                title={
-                                  isLeadTimeRisk
-                                    ? `Risk: Requires ${item.leadTimeWeeks} weeks lead time, but only ${weeksUntilEvent} weeks remain!`
-                                    : `Lead time: ${item.leadTimeWeeks} weeks`
-                                }
-                              >
-                                {item.leadTimeWeeks}w lead
-                              </Badge>
-                            )}
-                          </div>
-
-                          {item.quoteNotes && (
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400 line-clamp-2">
-                              {item.quoteNotes}
-                            </p>
-                          )}
-
-                          {/* Stage Transition Selector */}
-                          <div className="pt-2 border-t border-neutral-100 dark:border-neutral-800 flex items-center justify-between">
-                            <span className="text-xs text-neutral-400">Move to:</span>
-                            <select
-                              value={item.status}
-                              onChange={(e) =>
-                                handleStatusChange(item.id, e.target.value as VendorItem["status"])
-                              }
-                              aria-label={`Change stage for ${item.name}`}
-                              className="text-xs rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1 text-neutral-700 dark:text-neutral-300"
-                            >
-                              {PIPELINE_COLUMNS.map((stage) => (
-                                <option key={stage.id} value={stage.id}>
-                                  {stage.label}
-                                </option>
-                              ))}
-                            </select>
-                          </div>
-                        </div>
-                      );
-                    })
-                  )}
+                <div>
+                  <label htmlFor="new-vendor-lead-weeks" className="block text-xs font-semibold text-primary mb-1">
+                    Lead Time Required (Weeks)
+                  </label>
+                  <Input
+                    id="new-vendor-lead-weeks"
+                    type="number"
+                    min="0"
+                    max="104"
+                    value={newLeadWeeks}
+                    onChange={(e) => setNewLeadWeeks(e.target.value)}
+                    placeholder="e.g. 6"
+                  />
+                  <p className="text-xs text-tertiary mt-1">
+                    Used to calculate critical booking alerts. ({weeksUntilEvent} weeks remain until event).
+                  </p>
                 </div>
-              </div>
-            );
-          })}
-        </div>
-      ) : (
-        /* Table View */
-        <Surface className="overflow-x-auto">
-          <table className="w-full text-left text-xs" aria-label="Vendors table">
-            <thead className="bg-neutral-50 dark:bg-neutral-800/60 text-xs font-semibold text-neutral-700 dark:text-neutral-300 border-b border-neutral-200 dark:border-neutral-800 uppercase tracking-wider">
-              <tr>
-                <th scope="col" className="px-4 py-3">Vendor / Service</th>
-                <th scope="col" className="px-4 py-3">Category</th>
-                <th scope="col" className="px-4 py-3">Stage</th>
-                <th scope="col" className="px-4 py-3 text-right">Estimated Cost</th>
-                <th scope="col" className="px-4 py-3 text-right">Actual Cost</th>
-                <th scope="col" className="px-4 py-3 text-center">Lead Time</th>
-                <th scope="col" className="px-4 py-3">Notes</th>
-                <th scope="col" className="px-4 py-3 text-right">Actions</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-neutral-100 dark:divide-neutral-800">
-              {vendors.length === 0 ? (
+
+                <div>
+                  <label htmlFor="new-vendor-notes" className="block text-xs font-semibold text-primary mb-1">
+                    Notes / Deliverables
+                  </label>
+                  <textarea
+                    id="new-vendor-notes"
+                    rows={2}
+                    value={newNotes}
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    placeholder="Contract scope, dietary considerations, deposit required..."
+                    className="w-full text-xs rounded-control border border-border-strong bg-surface px-3 py-2 text-primary focus:outline-none focus:border-primary"
+                  />
+                </div>
+
+                <div className="flex justify-end gap-2 pt-2">
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => setIsAddOpen(false)}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    type="submit"
+                    variant="primary"
+                    size="sm"
+                  >
+                    Save vendor
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
+
+        {/* View: Kanban Pipeline */}
+        {viewMode === "kanban" && (
+          <div className="p-4 sm:p-6 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {PIPELINE_COLUMNS.map((col) => {
+              const items = vendors.filter((v) => v.status === col.id);
+
+              return (
+                <div
+                  key={col.id}
+                  className="flex flex-col rounded-surface bg-surface-elevated border border-border-subtle p-3 min-h-96"
+                >
+                  {/* Column Header */}
+                  <div className="flex items-center justify-between pb-3 mb-3 border-b border-border-subtle">
+                    <div className="flex items-center gap-2">
+                      <span className="font-semibold text-xs uppercase tracking-wider text-primary">
+                        {col.label}
+                      </span>
+                      <span className="px-2 py-0.5 rounded-full text-xs font-bold bg-surface text-secondary border border-border-subtle tnum">
+                        {items.length}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Cards List */}
+                  <div className="space-y-3 flex-1 overflow-y-auto">
+                    {items.length === 0 ? (
+                      <div className="text-center py-8 text-xs text-tertiary">
+                        No vendors in this stage
+                      </div>
+                    ) : (
+                      items.map((item) => {
+                        const isLeadTimeRisk =
+                          item.status !== "booked" &&
+                          item.leadTimeWeeks !== undefined &&
+                          item.leadTimeWeeks > weeksUntilEvent;
+
+                        return (
+                          <div
+                            key={item.id}
+                            className="p-3 rounded-control border border-border-subtle bg-surface shadow-xs space-y-2"
+                          >
+                            <div className="flex items-start justify-between gap-2">
+                              <div>
+                                <span className="text-xs font-semibold text-primary">
+                                  {item.category}
+                                </span>
+                                <h4 className="text-sm font-semibold text-primary leading-tight">
+                                  {item.name}
+                                </h4>
+                              </div>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                icon="trash"
+                                onClick={() => handleDelete(item.id)}
+                                className="text-tertiary hover:text-status-danger"
+                                aria-label={`Delete ${item.name}`}
+                              />
+                            </div>
+
+                            {/* Cost & Lead time */}
+                            <div className="flex flex-wrap items-center gap-2 text-xs text-secondary">
+                              {item.estimatedCostMinor !== undefined && (
+                                <span className="font-medium text-primary font-mono tnum">
+                                  {formatCurrency(item.estimatedCostMinor, currency)}
+                                </span>
+                              )}
+                              {item.leadTimeWeeks !== undefined && (
+                                <Badge
+                                  variant={isLeadTimeRisk ? "danger" : "neutral"}
+                                  size="sm"
+                                  title={
+                                    isLeadTimeRisk
+                                      ? `Risk: Requires ${item.leadTimeWeeks} weeks lead time, but only ${weeksUntilEvent} weeks remain!`
+                                      : `Lead time: ${item.leadTimeWeeks} weeks`
+                                  }
+                                >
+                                  {item.leadTimeWeeks}w lead
+                                </Badge>
+                              )}
+                            </div>
+
+                            {item.quoteNotes && (
+                              <p className="text-xs text-secondary line-clamp-2 leading-relaxed">
+                                {item.quoteNotes}
+                              </p>
+                            )}
+
+                            {/* Stage Transition Selector */}
+                            <div className="pt-2 border-t border-border-subtle flex items-center justify-between">
+                              <span className="text-xs text-tertiary">Move to:</span>
+                              <select
+                                value={item.status}
+                                onChange={(e) =>
+                                  handleStatusChange(item.id, e.target.value as VendorItem["status"])
+                                }
+                                aria-label={`Change stage for ${item.name}`}
+                                className="text-xs rounded-control border border-border-strong bg-surface px-2 py-1 text-primary cursor-pointer focus:outline-none focus:border-primary"
+                              >
+                                {PIPELINE_COLUMNS.map((c) => (
+                                  <option key={c.id} value={c.id}>
+                                    {c.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
+        {/* View: Data Table */}
+        {viewMode === "table" && (
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs" aria-label="Vendors table">
+              <thead className="bg-surface-elevated text-xs font-semibold text-secondary border-b border-border-subtle uppercase tracking-wider">
                 <tr>
-                  <td colSpan={8} className="px-4 py-8 text-center text-neutral-400">
-                    No vendors configured yet.
-                  </td>
+                  <th scope="col" className="px-4 py-3">Vendor / Business</th>
+                  <th scope="col" className="px-4 py-3">Category</th>
+                  <th scope="col" className="px-4 py-3">Stage</th>
+                  <th scope="col" className="px-4 py-3 text-right">Est. Cost</th>
+                  <th scope="col" className="px-4 py-3 text-right">Actual Cost</th>
+                  <th scope="col" className="px-4 py-3 text-center">Lead Time</th>
+                  <th scope="col" className="px-4 py-3">Notes</th>
+                  <th scope="col" className="px-4 py-3 text-right">Actions</th>
                 </tr>
-              ) : (
-                vendors.map((v) => (
-                  <tr key={v.id} className="hover:bg-neutral-50 dark:hover:bg-neutral-800/30 transition-colors">
-                    <td className="px-4 py-3 font-semibold text-neutral-900 dark:text-neutral-100">
-                      {v.name}
-                    </td>
-                    <td className="px-4 py-3 text-neutral-600 dark:text-neutral-400 text-xs">
-                      {v.category}
-                    </td>
-                    <td className="px-4 py-3">
-                      <select
-                        value={v.status}
-                        onChange={(e) =>
-                          handleStatusChange(v.id, e.target.value as VendorItem["status"])
-                        }
-                        aria-label={`Status for ${v.name}`}
-                        className="text-xs rounded-md border border-neutral-200 dark:border-neutral-700 bg-white dark:bg-neutral-800 px-2 py-1"
-                      >
-                        {PIPELINE_COLUMNS.map((stage) => (
-                          <option key={stage.id} value={stage.id}>
-                            {stage.label}
-                          </option>
-                        ))}
-                      </select>
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-neutral-700 dark:text-neutral-300 tnum">
-                      {v.estimatedCostMinor !== undefined
-                        ? formatCurrency(v.estimatedCostMinor, currency)
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right font-mono text-xs text-neutral-700 dark:text-neutral-300 tnum">
-                      {v.actualCostMinor !== undefined
-                        ? formatCurrency(v.actualCostMinor, currency)
-                        : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-center text-xs tnum">
-                      {v.leadTimeWeeks !== undefined ? `${v.leadTimeWeeks} wks` : "—"}
-                    </td>
-                    <td className="px-4 py-3 text-xs text-neutral-500 max-w-xs truncate">
-                      {v.quoteNotes || "—"}
-                    </td>
-                    <td className="px-4 py-3 text-right">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        icon="trash"
-                        onClick={() => handleDelete(v.id)}
-                        className="text-neutral-400 hover:text-danger hover:bg-danger-surface"
-                        aria-label={`Delete ${v.name}`}
-                      />
+              </thead>
+              <tbody className="divide-y divide-border-subtle">
+                {vendors.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="px-4 py-8 text-center text-tertiary">
+                      No vendors added yet. Click &quot;Add Vendor&quot; above to begin.
                     </td>
                   </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </Surface>
-      )}
+                ) : (
+                  vendors.map((v) => {
+                    const isLeadRisk =
+                      v.status !== "booked" &&
+                      v.leadTimeWeeks !== undefined &&
+                      v.leadTimeWeeks > weeksUntilEvent;
+
+                    return (
+                      <tr key={v.id} className="hover:bg-surface-elevated transition-colors">
+                        <td className="px-4 py-3 font-semibold text-primary">
+                          {v.name}
+                        </td>
+                        <td className="px-4 py-3 text-secondary text-xs">
+                          {v.category}
+                        </td>
+                        <td className="px-4 py-3">
+                          <select
+                            value={v.status}
+                            onChange={(e) =>
+                              handleStatusChange(v.id, e.target.value as VendorItem["status"])
+                            }
+                            aria-label={`Change stage for ${v.name}`}
+                            className="text-xs rounded-control border border-border-strong bg-surface px-2 py-1 text-primary cursor-pointer focus:outline-none focus:border-primary"
+                          >
+                            {PIPELINE_COLUMNS.map((c) => (
+                              <option key={c.id} value={c.id}>
+                                {c.label}
+                              </option>
+                            ))}
+                          </select>
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-xs text-primary tnum">
+                          {v.estimatedCostMinor !== undefined
+                            ? formatCurrency(v.estimatedCostMinor, currency)
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right font-mono text-xs text-primary tnum">
+                          {v.actualCostMinor !== undefined
+                            ? formatCurrency(v.actualCostMinor, currency)
+                            : "—"}
+                        </td>
+                        <td className="px-4 py-3 text-center">
+                          {v.leadTimeWeeks !== undefined ? (
+                            <Badge variant={isLeadRisk ? "danger" : "neutral"} size="sm">
+                              {v.leadTimeWeeks}w
+                            </Badge>
+                          ) : (
+                            <span className="text-tertiary">—</span>
+                          )}
+                        </td>
+                        <td className="px-4 py-3 text-xs text-secondary max-w-xs truncate">
+                          {v.quoteNotes || "—"}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            icon="trash"
+                            onClick={() => handleDelete(v.id)}
+                            className="text-tertiary hover:text-status-danger"
+                            aria-label={`Delete ${v.name}`}
+                          />
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        )}
+      </Surface>
     </div>
   );
 }
