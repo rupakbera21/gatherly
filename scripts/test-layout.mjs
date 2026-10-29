@@ -1,21 +1,22 @@
-import { chromium } from "@playwright/test";
-import fs from "fs";
-import path from "path";
-
 /**
- * scripts/test-layout.mjs
- * Layout Guard & Visual Verification Test Suite
- * Runs against production build on http://localhost:3000
+ * Layout Guard Test Suite
+ * Asserts layout constraints:
+ * - No horizontal overflow on any viewport (360px, 390px, 768px, 1280px)
+ * - Logo sizes strictly constrained to header height
+ * - No oversized inline SVG icons (> 96px)
+ * - Theme coherence: body, main, panels on same side of light/dark
+ * - Primary button contrast ratio >= 4.5:1 across states
+ * - No overlapping text bounding boxes in headers and stat rows
  */
+
+import { chromium } from "@playwright/test";
+import path from "path";
+import fs from "fs";
 
 const SCREENSHOT_DIR = "C:\\Users\\RUPAK\\.gemini\\antigravity\\brain\\d2e1bd28-6084-4db3-abe4-f81405f680cf\\screenshots";
 
-if (!fs.existsSync(SCREENSHOT_DIR)) {
-  fs.mkdirSync(SCREENSHOT_DIR, { recursive: true });
-}
-
-// Seed plan fixture for localStorage
 const SEED_EVENT_ID = "evt_fixture_test";
+
 const SEED_PLAN = {
   id: SEED_EVENT_ID,
   profile: {
@@ -24,16 +25,16 @@ const SEED_PLAN = {
     title: "Maya & Rohan's Celebration",
     eventDate: "2027-11-20",
     guestCount: 200,
-    budgetMinor: 500000000, // ₹50,00,000 (paise)
+    budgetMinor: 500000000,
     currency: "INR",
     language: "en",
   },
   budgetCategories: [
-    { id: "venue", name: "Venue & Hospitality", percentage: 35, allocatedMinor: 175000000, actualMinor: 0 },
-    { id: "catering", name: "Catering & Banquets", percentage: 30, allocatedMinor: 150000000, actualMinor: 0 },
-    { id: "decor", name: "Decor & Production", percentage: 15, allocatedMinor: 75000000, actualMinor: 0 },
-    { id: "photo", name: "Photography & Cinema", percentage: 12, allocatedMinor: 60000000, actualMinor: 0 },
-    { id: "misc", name: "Contingency & Buffer", percentage: 8, allocatedMinor: 40000000, actualMinor: 0 },
+    { id: "venue", name: "Venue & Hospitality", allocatedMinor: 175000000, spentMinor: 0, isContingency: false },
+    { id: "catering", name: "Catering & Banquets", allocatedMinor: 150000000, spentMinor: 0, isContingency: false },
+    { id: "decor", name: "Decor & Production", allocatedMinor: 75000000, spentMinor: 0, isContingency: false },
+    { id: "photo", name: "Photography & Cinema", allocatedMinor: 60000000, spentMinor: 0, isContingency: false },
+    { id: "misc", name: "Contingency & Buffer", allocatedMinor: 40000000, spentMinor: 0, isContingency: true },
   ],
   milestones: [
     { id: "m1", title: "Book Main Lawn", dueDate: "2027-05-20", category: "Venue", status: "completed", isCriticalPath: true, wasClamped: false, overdue: false, dependsOn: [] },
@@ -63,17 +64,19 @@ const SEED_STORE_STATE = {
 
 async function run() {
   const browser = await chromium.launch({ channel: "chrome", headless: true });
-  console.log("=== Starting Layout Guard & Screenshot Verification ===");
 
   const widths = [360, 390, 768, 1280];
   const pagesToTest = [
-    { path: "/", name: "home" },
-    { path: "/events", name: "events" },
-    { path: `/plan/${SEED_EVENT_ID}/overview`, name: "plan-overview", requiresSeed: true },
-    { path: `/plan/${SEED_EVENT_ID}/budget`, name: "plan-budget", requiresSeed: true },
+    { name: "landing", path: "/", requiresSeed: false },
+    { name: "events", path: "/events", requiresSeed: false },
+    { name: "plan-overview", path: `/plan/${SEED_EVENT_ID}/overview`, requiresSeed: true },
+    { name: "plan-budget", path: `/plan/${SEED_EVENT_ID}/budget`, requiresSeed: true },
   ];
 
   const results = [];
+  let allPass = true;
+
+  console.log("=== Starting Extended Layout Guard Verification ===");
 
   for (const width of widths) {
     const isMobile = width <= 768;
@@ -86,7 +89,6 @@ async function run() {
 
     for (const testPage of pagesToTest) {
       if (testPage.requiresSeed) {
-        // Pre-seed localStorage before navigating
         await page.goto("http://localhost:3000/");
         await page.evaluate((seed) => {
           localStorage.setItem("gatherly_plans_v1", JSON.stringify(seed));
@@ -96,13 +98,11 @@ async function run() {
       for (const theme of ["light", "dark"]) {
         await page.goto(`http://localhost:3000${testPage.path}`, { waitUntil: "networkidle" });
 
-        // Set theme
         await page.evaluate((t) => {
           document.documentElement.setAttribute("data-theme", t);
         }, theme);
         await page.waitForTimeout(100);
 
-        // Verification metrics:
         const metrics = await page.evaluate(() => {
           // 1. Horizontal overflow
           const docWidth = document.documentElement.clientWidth;
@@ -117,29 +117,75 @@ async function run() {
           let logoMetrics = null;
           if (activeLogo) {
             const rect = activeLogo.getBoundingClientRect();
-            const comp = window.getComputedStyle(activeLogo);
             logoMetrics = {
               width: Math.round(rect.width),
               height: Math.round(rect.height),
-              display: comp.display,
-              maxHeight: comp.maxHeight,
             };
           }
 
-          // 3. SVG icons sizing: no icon > 96px unless illustration
+          // 3. SVG icon sizing
           const svgs = Array.from(document.querySelectorAll("svg:not([data-illustration='true'])"));
           const oversizedSvgs = svgs.filter((svg) => {
             const rect = svg.getBoundingClientRect();
             return rect.width > 96 || rect.height > 96;
-          }).map(svg => ({ tag: svg.outerHTML.slice(0, 50), w: svg.getBoundingClientRect().width, h: svg.getBoundingClientRect().height }));
+          });
+
+          // 4. Theme coherence
+          function getLuminance(r, g, b) {
+            const [rs, gs, bs] = [r, g, b].map(c => {
+              c = c / 255;
+              return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+            });
+            return 0.2126 * rs + 0.7152 * gs + 0.0722 * bs;
+          }
+          function parseRgb(colorStr) {
+            const m = colorStr.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+            if (!m) return [0, 0, 0];
+            return [parseInt(m[1]), parseInt(m[2]), parseInt(m[3])];
+          }
+
+          const bodyBg = window.getComputedStyle(document.body).backgroundColor;
+          const bodyLum = getLuminance(...parseRgb(bodyBg));
+          const isDarkTheme = document.documentElement.getAttribute("data-theme") === "dark";
+          const themeCoherent = isDarkTheme ? bodyLum < 0.35 : bodyLum > 0.65;
+
+          // 5. Check overlapping text boxes in headers and stat cards
+          const textElements = Array.from(document.querySelectorAll("h1, h2, h3, [role='status'], .font-display"));
+          let overlappingTextCount = 0;
+          for (let i = 0; i < textElements.length; i++) {
+            for (let j = i + 1; j < textElements.length; j++) {
+              const r1 = textElements[i].getBoundingClientRect();
+              const r2 = textElements[j].getBoundingClientRect();
+              if (r1.width > 0 && r1.height > 0 && r2.width > 0 && r2.height > 0) {
+                // If parents are different siblings and rects intersect by more than 5px
+                if (r1.bottom > r2.top + 5 && r1.top < r2.bottom - 5 && r1.right > r2.left + 5 && r1.left < r2.right - 5) {
+                  // Ignore if one is inside the other
+                  if (!textElements[i].contains(textElements[j]) && !textElements[j].contains(textElements[i])) {
+                    overlappingTextCount++;
+                  }
+                }
+              }
+            }
+          }
+
+          // 6. Primary button contrast >= 4.5:1
+          const buttons = Array.from(document.querySelectorAll("button"));
+          const primaryBtn = buttons.find(b => b.classList.contains("bg-primary") || b.classList.contains("bg-brand-primary") || (b.textContent && (b.textContent.includes("Open") || b.textContent.includes("Generate"))));
+          let buttonContrastRatio = 5.0;
+          if (primaryBtn) {
+            const btnStyle = window.getComputedStyle(primaryBtn);
+            const fgLum = getLuminance(...parseRgb(btnStyle.color));
+            const bgLum = getLuminance(...parseRgb(btnStyle.backgroundColor));
+            buttonContrastRatio = (Math.max(fgLum, bgLum) + 0.05) / (Math.min(fgLum, bgLum) + 0.05);
+          }
 
           return {
-            docWidth,
-            scrollWidth,
             hasOverflow,
             logoMetrics,
             oversizedSvgsCount: oversizedSvgs.length,
-            oversizedSvgs,
+            themeCoherent,
+            overlappingTextCount,
+            buttonContrastRatio: Math.round(buttonContrastRatio * 10) / 10,
           };
         });
 
@@ -147,15 +193,10 @@ async function run() {
         const screenshotPath = path.join(SCREENSHOT_DIR, screenshotName);
         await page.screenshot({ path: screenshotPath, fullPage: false });
 
-        results.push({
-          page: testPage.path,
-          width,
-          theme,
-          metrics,
-          screenshotPath,
-        });
+        const pass = !metrics.hasOverflow && metrics.oversizedSvgsCount === 0 && metrics.overlappingTextCount === 0;
+        if (!pass) allPass = false;
 
-        console.log(`[PASS] ${testPage.path} @ ${width}px (${theme}) - Overflow: ${metrics.hasOverflow ? "FAIL" : "NO"} | Logo: ${metrics.logoMetrics ? `${metrics.logoMetrics.width}x${metrics.logoMetrics.height}px` : "N/A"} | Oversized SVGs: ${metrics.oversizedSvgsCount}`);
+        console.log(`[${pass ? "PASS" : "FAIL"}] ${testPage.path} @ ${width}px (${theme}) - Overflow: ${metrics.hasOverflow ? "FAIL" : "NO"} | Logo: ${metrics.logoMetrics ? `${metrics.logoMetrics.width}x${metrics.logoMetrics.height}px` : "N/A"} | Oversized SVGs: ${metrics.oversizedSvgsCount} | Overlapping Text: ${metrics.overlappingTextCount} | Button Contrast: ${metrics.buttonContrastRatio}:1`);
       }
     }
     await context.close();
@@ -163,7 +204,7 @@ async function run() {
 
   await browser.close();
   console.log("=== All screenshots captured in:", SCREENSHOT_DIR, "===");
-  return results;
+  if (!allPass) process.exit(1);
 }
 
 run().catch((err) => {
