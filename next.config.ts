@@ -62,15 +62,9 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Turbopack for development
-  turbopack: {
-    rules: {
-      "*.css": {
-        loaders: ["@tailwindcss/turbopack"],
-        as: "*.css",
-      },
-    },
-  },
+  // Turbopack for development — Tailwind v4 is handled natively via @import "tailwindcss"
+  // in globals.css; no custom loader rule needed (the rule caused a double-process panic).
+  turbopack: {},
 };
 
 export default nextConfig;
