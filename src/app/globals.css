@@ -26,7 +26,7 @@
   /* ---- Text & Typography ---- */
   --text-primary: #0a0f29;
   --text-secondary: #475569;
-  --text-tertiary: #64748b;
+  --text-tertiary: #525e75; /* darkened from #64748b to guarantee >=4.5:1 even on worst-case gradient (#dbe6ff) */
   --text-inverse: #ffffff;
 
   /* ---- Structural Borders ---- */
@@ -210,13 +210,13 @@
 }
 
 [data-theme="light"] {
-  --bg-canvas: #f8fafc;
+  --bg-canvas: #ffffff;
   --bg-surface: #ffffff;
   --bg-surface-elevated: #f1f5f9;
 
   --text-primary: #0f172a;
   --text-secondary: #475569;
-  --text-tertiary: #64748b;
+  --text-tertiary: #525e75;
   --text-inverse: #ffffff;
 
   --border-subtle: #e2e8f0;

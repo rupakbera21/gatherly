@@ -52,6 +52,14 @@ interface IconProps extends React.SVGProps<SVGSVGElement> {
   "aria-label"?: string;
 }
 
+const SIZE_MAP: Record<string, number> = {
+  xs: 12,
+  sm: 16,
+  md: 20,
+  lg: 24,
+  xl: 32,
+};
+
 export const Icon: React.FC<IconProps> = ({
   name,
   size = 20,
@@ -60,9 +68,14 @@ export const Icon: React.FC<IconProps> = ({
   "aria-label": ariaLabel,
   ...rest
 }) => {
+  const numericSize =
+    typeof size === "number"
+      ? size
+      : SIZE_MAP[size] ?? (parseInt(size, 10) || 20);
+
   const commonProps = {
-    width: size,
-    height: size,
+    width: numericSize,
+    height: numericSize,
     viewBox: "0 0 24 24",
     fill: "none",
     stroke: "currentColor",
@@ -70,6 +83,13 @@ export const Icon: React.FC<IconProps> = ({
     strokeLinecap: "round" as const,
     strokeLinejoin: "round" as const,
     className: `inline-block shrink-0 align-middle ${className}`,
+    style: {
+      width: `${numericSize}px`,
+      height: `${numericSize}px`,
+      maxWidth: `${numericSize}px`,
+      maxHeight: `${numericSize}px`,
+      ...(rest.style || {}),
+    },
     "aria-hidden": ariaLabel ? undefined : ariaHidden,
     "aria-label": ariaLabel,
     role: ariaLabel ? "img" : undefined,
