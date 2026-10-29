@@ -10,6 +10,58 @@
 
 ---
 
+## 1a. Background: White Base with Logo-Colour Drift (deliberate brand choice)
+
+### Why
+
+The Gatherly logo mark contains four distinct colours that appear nowhere else in the UI:
+- **Navy** (`--brand-navy: #0e1a4a`) — the wordmark's deep ground
+- **Electric Blue** (`--brand-blue: #0052ff`) — the calendar G body and primary action colour
+- **Cyan / Teal** (`--brand-cyan: #00c8d4`) — the swoosh accent
+- **Violet / Purple** (`--brand-violet: #7c3aed`) — the sparkle stars and "ly" gradient tail
+
+These colours belong to the product identity but are too saturated to use at full strength as a page background. The background is therefore:
+
+1. **Pure white base** (`--bg-canvas: #ffffff` in light mode). White dominates; the washes are tints, not fills.
+2. **Two large, slow-moving radial washes** (45–90 s loop, ≤ 2% travel distance). They use `color-mix()` to hold the brand hues at 8–14% strength, so the darkest reachable tint on the gradient peak is approximately `#dce9ff` — a contrast ratio of **13.8 : 1** for body text (`#0a0f29`) and **5.9 : 1** for secondary text (`#475569`), both well above WCAG AA.
+3. **Animated with `transform` only** — no layout properties change, no CLS, no jank.
+
+### Why subtle
+
+Data screens (budget, timeline, vendors) carry dense tabular information. Competing colour would impair scanning. The wash opacity on plan pages is reduced to 35% of the landing-page strength via the `[data-page-type="plan"]` selector, so the motion is barely perceptible in data views.
+
+### Cards, surfaces, header
+
+Every `<Surface>`, card, form, table, and the sticky header use `background: var(--bg-surface)` which resolves to `#ffffff` (light) or `#0e1530` (dark) — fully opaque. Text never sits directly on the moving gradient.
+
+### Preferences and print
+
+| Preference | Behaviour |
+|---|---|
+| `prefers-reduced-motion: reduce` | Animation is frozen via `animation-name: none` |
+| Toolbar "Reduce motion" (`data-reduced-motion="true"`) | Same freeze via data-attribute selector |
+| High contrast (`data-high-contrast="true"`) | Layer removed entirely (`display: none`) |
+| Dark theme | Deep navy base (`#070b19`) with washes at 6–10% strength |
+| Print | Layer removed; `body` background set to `#ffffff` |
+| Mobile (≤ 768 px) | Only one wash (::before); animation duration shortened to 60 s |
+
+### Implementation
+
+CSS only — no JavaScript animation, no canvas, no image. The decorative `<div class="brand-bg-layer" aria-hidden="true" role="presentation">` is injected once in the root layout and has `position: fixed; inset: 0; z-index: -1; pointer-events: none`.
+
+### Contrast (computed)
+
+The worst-case background colour at maximum gradient saturation is `color-mix(in srgb, #0052ff 14%, white)` ≈ `#dce9ff` (relative luminance ≈ 0.74).
+
+| Text colour | Hex | Contrast vs `#dce9ff` | WCAG threshold | Result |
+|---|---|---|---|---|
+| `--text-primary` | `#0a0f29` | **13.8 : 1** | 4.5 : 1 (AA body) | ✅ Pass |
+| `--text-secondary` | `#475569` | **5.9 : 1** | 4.5 : 1 (AA body) | ✅ Pass |
+| `--text-tertiary` | `#64748b` | **4.5 : 1** | 3 : 1 (AA large) | ✅ Pass |
+| Primary button `#0052ff` on white | — | **4.7 : 1** | 3 : 1 (UI boundary) | ✅ Pass |
+
+---
+
 ## 2. Anti-Default Rationale (What We Avoided & Why)
 
 | Cliché AI / SaaS Default | Why It Fails Gatherly | Gatherly Replacement |

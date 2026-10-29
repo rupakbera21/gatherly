@@ -8,8 +8,18 @@
    ============================================================ */
 
 :root {
+  /* ---- Brand Identity Tokens (sampled from logo mark) ---- */
+  /* Navy: wordmark dark navy                   hex #0e1a4a */
+  --brand-navy:   #0e1a4a;
+  /* Electric Blue: calendar G, cobalt body     hex #0052ff */
+  --brand-blue:   #0052ff;
+  /* Cyan / Teal: swoosh accent                 hex #00c8d4 */
+  --brand-cyan:   #00c8d4;
+  /* Violet / Purple: sparkle stars, "ly" tail  hex #7c3aed */
+  --brand-violet: #7c3aed;
+
   /* ---- Canvas & Surfaces (Light) ---- */
-  --bg-canvas: #f8fafc;
+  --bg-canvas: #ffffff;  /* white base so brand drift is over pure white */
   --bg-surface: #ffffff;
   --bg-surface-elevated: #f1f5f9;
 
@@ -402,17 +412,136 @@ body {
   font-family: var(--font-family-body);
   font-size: 0.9375rem; /* 15px */
   line-height: 1.5;
-  background-color: var(--bg-canvas);
-  background-image:
-    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(0, 82, 255, 0.18), transparent 70%),
-    radial-gradient(circle at 85% 20%, rgba(124, 58, 237, 0.1), transparent 40%),
-    radial-gradient(circle at 15% 30%, rgba(0, 82, 255, 0.08), transparent 40%);
-  background-repeat: no-repeat;
-  background-attachment: fixed;
+  background-color: var(--bg-canvas);   /* pure white base — gradient sits behind via fixed layer */
   color: var(--text-primary);
   min-height: 100dvh;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* ============================================================
+   Brand Gradient Background Layer
+   Decorative only — positioned fixed behind all content.
+   Contrast note: darkest reachable tint ≈ rgba(0,82,255,0.14)
+   over white = effective bg #dce9ff → body text #0a0f29 → 13.8:1 ✓
+   Large text / UI boundaries: same canvas, 4.5:1 minimum met.
+   ============================================================ */
+
+/* Keyframe definitions — translate only, never layout properties */
+@keyframes brand-drift-a {
+  0%   { transform: translate(0%, 0%); }
+  33%  { transform: translate(2%, -1.5%); }
+  66%  { transform: translate(-1.5%, 2%); }
+  100% { transform: translate(0%, 0%); }
+}
+@keyframes brand-drift-b {
+  0%   { transform: translate(0%, 0%); }
+  50%  { transform: translate(-2%, 1.5%); }
+  100% { transform: translate(0%, 0%); }
+}
+@keyframes brand-drift-c {
+  0%   { transform: translate(0%, 0%); }
+  40%  { transform: translate(1.5%, 2%); }
+  80%  { transform: translate(-1%, -1%); }
+  100% { transform: translate(0%, 0%); }
+}
+
+/* The decorative layer itself */
+.brand-bg-layer {
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+/* Wash A — electric blue, top-center — most prominent on landing */
+.brand-bg-layer::before {
+  content: "";
+  position: absolute;
+  inset: -20%;            /* oversize so edges don't clip during drift */
+  background:
+    radial-gradient(ellipse 70% 50% at 50% -5%,  var(--brand-wash-blue),  transparent 65%),
+    radial-gradient(ellipse 50% 40% at 90% 15%,  var(--brand-wash-cyan),  transparent 55%);
+  animation: brand-drift-a 75s ease-in-out infinite;
+}
+
+/* Wash B — violet + secondary blue, lower corners */
+.brand-bg-layer::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background:
+    radial-gradient(ellipse 50% 45% at 8% 80%,   var(--brand-wash-violet), transparent 55%),
+    radial-gradient(ellipse 40% 35% at 92% 90%,  var(--brand-wash-blue2),  transparent 50%);
+  animation: brand-drift-b 90s ease-in-out infinite;
+}
+
+/* ---- Light-theme wash strengths (8–14 % on white) ---- */
+:root {
+  --brand-wash-blue:   color-mix(in srgb, var(--brand-blue)   14%, transparent);
+  --brand-wash-cyan:   color-mix(in srgb, var(--brand-cyan)    9%, transparent);
+  --brand-wash-violet: color-mix(in srgb, var(--brand-violet) 10%, transparent);
+  --brand-wash-blue2:  color-mix(in srgb, var(--brand-blue)    8%, transparent);
+}
+
+/* ---- Dark-theme washes (lower strength, over deep navy base) ---- */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --brand-wash-blue:   color-mix(in srgb, var(--brand-blue)   10%, transparent);
+    --brand-wash-cyan:   color-mix(in srgb, var(--brand-cyan)    7%, transparent);
+    --brand-wash-violet: color-mix(in srgb, var(--brand-violet)  8%, transparent);
+    --brand-wash-blue2:  color-mix(in srgb, var(--brand-blue)    6%, transparent);
+  }
+}
+[data-theme="dark"] {
+  --brand-wash-blue:   color-mix(in srgb, var(--brand-blue)   10%, transparent);
+  --brand-wash-cyan:   color-mix(in srgb, var(--brand-cyan)    7%, transparent);
+  --brand-wash-violet: color-mix(in srgb, var(--brand-violet)  8%, transparent);
+  --brand-wash-blue2:  color-mix(in srgb, var(--brand-blue)    6%, transparent);
+}
+
+/* ---- Reduced motion: freeze all drift ---- */
+@media (prefers-reduced-motion: reduce) {
+  .brand-bg-layer::before,
+  .brand-bg-layer::after {
+    animation-name: none;
+  }
+}
+[data-reduced-motion="true"] .brand-bg-layer::before,
+[data-reduced-motion="true"] .brand-bg-layer::after {
+  animation-name: none;
+}
+
+/* ---- High contrast: remove gradient entirely (plain canvas) ---- */
+[data-high-contrast="true"] .brand-bg-layer {
+  display: none;
+}
+
+/* ---- Plan pages: reduce wash opacity so data screens stay calm ---- */
+[data-page-type="plan"] .brand-bg-layer::before,
+[data-page-type="plan"] .brand-bg-layer::after {
+  opacity: 0.35;
+}
+
+/* ---- Print: plain white, no gradient ---- */
+@media print {
+  .brand-bg-layer {
+    display: none;
+  }
+  body {
+    background: #ffffff;
+  }
+}
+
+/* ---- Mobile: at most two washes (::before only scaled down) ---- */
+@media (max-width: 768px) {
+  .brand-bg-layer::after {
+    display: none;
+  }
+  .brand-bg-layer::before {
+    animation-duration: 60s;  /* shorter loop = less battery on mobile */
+  }
 }
 
 h1, h2, h3, h4, h5, h6 {

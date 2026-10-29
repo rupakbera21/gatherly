@@ -88,6 +88,15 @@ export default function RootLayout({
           Skip to main content
         </a>
 
+        {/* Decorative brand-gradient background layer — CSS-only, aria-hidden, non-interactive.
+            Fixed behind all content; respects reduced-motion and high-contrast via CSS.
+            See docs/DESIGN.md § Background for contrast and performance rationale. */}
+        <div
+          className="brand-bg-layer"
+          aria-hidden="true"
+          role="presentation"
+        />
+
         {/* Global polite aria-live region for async status announcements.
             A single region prevents announcement spam when multiple sections load. */}
         <div
