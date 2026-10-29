@@ -11,9 +11,9 @@ import { IntakeSection } from "@/components/intake/IntakeSection";
 import { Icon, Badge, BrandLogo } from "@/components/ui";
 
 export const metadata: Metadata = {
-  title: "Gatherly – Turn Event Ideas Into Clear Operational Plans",
+  title: "Gatherly – Turn Your Event Ideas into a Plan You Can Actually Run",
   description:
-    "Describe your event in plain language and receive audited budget ledgers, backward milestone timelines, vendor checklists, and day-of run sheets.",
+    "Budgets in rupees that add up, a timeline counted back from your date, vendor checklists, and a minute-by-minute schedule for the day.",
 };
 
 export default function HomePage() {
@@ -45,16 +45,16 @@ export default function HomePage() {
         <section className="text-center flex flex-col items-center gap-4 sm:gap-5">
           <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-border-strong bg-surface/90 backdrop-blur-md text-xs font-semibold text-secondary shadow-xs">
             <Icon name="sparkles" size={14} className="text-brand" aria-hidden />
-            <span>Audited celebration planner • Built for India (INR ₹)</span>
+            <span>AI event planner for weddings, birthdays, and community gatherings</span>
           </div>
 
           <h1 className="text-3xl sm:text-5xl lg:text-6xl font-extrabold font-display text-primary tracking-tight max-w-4xl leading-[1.15]">
-            Turn messy celebration ideas into an{" "}
-            <span className="text-brand-gradient">audited operational plan</span>
+            Turn your event ideas into a{" "}
+            <span className="text-brand-gradient">plan you can actually run</span>
           </h1>
 
           <p className="text-secondary text-base sm:text-lg max-w-2xl leading-relaxed">
-            Penny-accurate Rupee (₹) budgets, backwards milestone timelines, and day-of call sheets—governed by deterministic domain engines.
+            Budgets in rupees that add up, a timeline counted back from your date, vendor checklists, and a minute-by-minute schedule for the day.
           </p>
         </section>
 
@@ -63,7 +63,7 @@ export default function HomePage() {
           <IntakeSection />
         </div>
 
-        {/* Architectural Engine Safeguards */}
+        {/* Core Capabilities */}
         <section className="border border-border-strong rounded-surface bg-surface/90 backdrop-blur-sm p-6 sm:p-8 shadow-sm">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between pb-4 border-b border-border-subtle mb-6 gap-3">
             <div className="flex items-center gap-2.5">
@@ -72,15 +72,15 @@ export default function HomePage() {
               </div>
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-primary block">
-                  Deterministic Domain Safeguards
+                  Everything you need to run the day
                 </span>
                 <span className="text-xs text-tertiary">
-                  Zero rounding drift • Acyclic milestone DAGs • Mathematical rigor
+                  Clear numbers • Coordinated schedules • Ready to share
                 </span>
               </div>
             </div>
             <Badge variant="neutral" size="sm">
-              Single source of truth
+              All in one place
             </Badge>
           </div>
 
@@ -88,14 +88,14 @@ export default function HomePage() {
             <div className="p-5 bg-surface-elevated/70 rounded-control border border-border-subtle flex flex-col gap-2.5 hover:border-border-strong transition-colors">
               <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <Icon name="currency" size={16} className="text-brand" aria-hidden />
-                <span>Exact Rupee Ledger</span>
+                <span>Budgets that add up</span>
               </div>
               <p className="text-tertiary leading-relaxed">
-                Hare-Niemeyer largest-remainder allocation guarantees zero discrepancy down to the exact rupee across all categories.
+                Allocations across venue, catering, decor, and vendors that always total your budget down to the exact rupee.
               </p>
               <div className="mt-auto pt-2">
                 <span className="inline-flex text-2xs font-semibold uppercase tracking-wider text-secondary px-2 py-0.5 rounded-full bg-surface border border-border-subtle">
-                  0-rupee drift
+                  Zero discrepancy
                 </span>
               </div>
             </div>
@@ -103,14 +103,14 @@ export default function HomePage() {
             <div className="p-5 bg-surface-elevated/70 rounded-control border border-border-subtle flex flex-col gap-2.5 hover:border-border-strong transition-colors">
               <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <Icon name="clock" size={16} className="text-brand" aria-hidden />
-                <span>Backward DAG Timeline</span>
+                <span>Backward timeline</span>
               </div>
               <p className="text-tertiary leading-relaxed">
-                Phased milestones planned backward from your event date with cycle detection and standard calendar export.
+                Milestones planned backward from your event date so you always know what to book and when to send invites.
               </p>
               <div className="mt-auto pt-2">
                 <span className="inline-flex text-2xs font-semibold uppercase tracking-wider text-secondary px-2 py-0.5 rounded-full bg-surface border border-border-subtle">
-                  Topological sort
+                  Calendar sync
                 </span>
               </div>
             </div>
@@ -118,10 +118,10 @@ export default function HomePage() {
             <div className="p-5 bg-surface-elevated/70 rounded-control border border-border-subtle flex flex-col gap-2.5 hover:border-border-strong transition-colors">
               <div className="flex items-center gap-2 text-primary font-semibold text-sm">
                 <Icon name="clipboard" size={16} className="text-brand" aria-hidden />
-                <span>Minute-by-Minute Run Sheet</span>
+                <span>Minute-by-minute schedule</span>
               </div>
               <p className="text-tertiary leading-relaxed">
-                Execution call sheet with coordinator role filters, stage cues, and clean print-ready layout.
+                Day-of run sheets with coordinator role filters, cue times, and clean print-ready export.
               </p>
               <div className="mt-auto pt-2">
                 <span className="inline-flex text-2xs font-semibold uppercase tracking-wider text-secondary px-2 py-0.5 rounded-full bg-surface border border-border-subtle">

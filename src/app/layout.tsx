@@ -23,7 +23,7 @@ const instrument = Instrument_Sans({
 });
 
 const notoSans = Noto_Sans({
-  subsets: ["latin", "latin-ext", "devanagari"],
+  subsets: ["latin", "latin-ext"],
   weight: ["400", "500", "600", "700"],
   display: "swap",
   variable: "--font-noto",
@@ -55,10 +55,10 @@ export const metadata: Metadata = {
   },
   icons: {
     icon: [
-      { url: "/icon.svg", type: "image/svg+xml" },
-      { url: "/logo.png", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.png", type: "image/png", sizes: "512x512" },
     ],
-    apple: "/logo.png",
+    apple: "/apple-icon.png",
   },
 };
 

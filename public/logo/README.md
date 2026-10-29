@@ -28,3 +28,4 @@ This directory holds the official Gatherly brand assets.
   serves optimised copies; originals over 300 KB are re-compressed automatically).
 - The wordmark is **dark navy** (`#0e1a4a`). On dark theme, use the white-wordmark
   variant (`gatherly-dark.png`).
+
