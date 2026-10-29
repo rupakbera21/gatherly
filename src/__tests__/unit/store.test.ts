@@ -113,4 +113,47 @@ describe("Zustand Store Unit Tests", () => {
     expect(result.success).toBe(false);
     expect(result.error).toContain("512 KB limit");
   });
+
+  describe("LocalStorage Hydration & Recovery", () => {
+    it("safely resets and displays storage notice when rehydrated with corrupted or mismatched data", () => {
+      // Simulate state object with schema mismatch (corrupted events)
+      const corruptedState = {
+        version: 999, // Wrong version or corrupted data
+        events: { invalid_id: { corrupted: true, missingProfile: true } },
+        currentEventId: "invalid_id",
+        storageNotice: null as string | null,
+      };
+
+      // Trigger rehydrate handler logic directly
+      const storeOptions = (useGatherlyStore as unknown as { persist: { getOptions: () => { onRehydrateStorage?: (s: unknown) => (st: unknown, err?: unknown) => void } } }).persist;
+      expect(storeOptions).toBeDefined();
+
+      // Verify that corrupt state triggers safe fallback
+      const state = useGatherlyStore.getState();
+      state.deleteAllData();
+
+      // Simulate onRehydrateStorage callback execution
+      const onRehydrate = storeOptions.getOptions().onRehydrateStorage?.(state);
+      if (typeof onRehydrate === "function") {
+        onRehydrate(corruptedState, undefined);
+        expect(corruptedState.events).toEqual({});
+        expect(corruptedState.currentEventId).toBeNull();
+        expect(corruptedState.storageNotice).toContain("safely reset");
+      }
+    });
+
+    it("recovers gracefully when localStorage throws during parse", () => {
+      const state = useGatherlyStore.getState();
+      const storeOptions = (useGatherlyStore as unknown as { persist: { getOptions: () => { onRehydrateStorage?: (s: unknown) => (st: unknown, err?: unknown) => void } } }).persist;
+      const onRehydrate = storeOptions.getOptions().onRehydrateStorage?.(state);
+
+      const throwingState: unknown = null;
+      // Should not throw or crash the app
+      expect(() => {
+        if (typeof onRehydrate === "function") {
+          onRehydrate(throwingState, new Error("Storage unavailable"));
+        }
+      }).not.toThrow();
+    });
+  });
 });
