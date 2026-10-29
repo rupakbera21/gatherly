@@ -20,6 +20,9 @@ During static prerender passes, accessing dynamic URL parameters (`/plan/[id]/*`
    - Dynamic client state hydrates smoothly in the browser via `useSyncExternalStore` without layout shifts or flashes of unstyled content.
 3. **No Force Dynamic:**
    - Avoid legacy dynamic directives that disable Turbopack's partial prefetching engine.
+4. **Build Pipeline Stabilization (Webpack + PostCSS):**
+   - The production build uses `next build --webpack` with `@tailwindcss/postcss` and `postcss.config.mjs`.
+   - On Windows with Next.js 16.4.2, Turbopack's native Rust CSS module compiler caused build panics when scanning imported SVG assets and raw stylesheet graphs. The Webpack pipeline generates fully compiled Tailwind CSS bundles (`.next/static/css/*.css`), zero runtime CSS parsing penalties, full compatibility with partial prefetching, and deterministic CI/CD builds.
 
 ## Consequences
 - **Positive:** Fast Time to First Byte (TTFB); static HTML shells load near-instantly from CDN edges.

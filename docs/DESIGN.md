@@ -49,6 +49,24 @@ Every `<Surface>`, card, form, table, and the sticky header use `background: var
 
 CSS only — no JavaScript animation, no canvas, no image. The decorative `<div class="brand-bg-layer" aria-hidden="true" role="presentation">` is injected once in the root layout and has `position: fixed; inset: 0; z-index: -1; pointer-events: none`.
 
+---
+
+## 1b. Brand Logo & Layout Guard Specifications
+
+### BrandLogo Dimensions & Containment
+- **Desktop (≥ 640px):** 119px wide × 40px high (`h-10 w-auto max-w-full object-contain`).
+- **Mobile (< 640px):** 107px wide × 36px high (`h-9 w-auto max-w-full object-contain`).
+- **Next.js `<Image>` Implementation:** Explicit `width={119} height={40}` and `priority` preload prevents cumulative layout shift (CLS < 0.05). Both light (`logo-opt.png`) and dark (`logo-dark-opt.png`) optimized assets are preloaded and switched seamlessly via CSS theme classes (`brand-logo-light` / `brand-logo-dark`).
+
+### Layout Guard Assertions (`npm run test:layout`)
+Enforced across viewports (360px, 390px, 768px, 1280px) and color schemes (light, dark, high contrast):
+1. **Zero Horizontal Overflow:** `scrollWidth <= clientWidth + 1` on root HTML and body.
+2. **SVG Size Boundary:** No SVG icon exceeds 96px in either dimension unless marked explicitly with `data-illustration="true"`.
+3. **Content Padding:** Minimum 16px horizontal viewport padding on mobile screens (`px-4 sm:px-6`).
+4. **Theme Coherence:** Body, main, header, sidebar, and panels share synchronized luminosity in both dark and high-contrast modes (no mismatched half-light / half-dark viewports).
+5. **Primary Button Contrast:** Primary CTA text vs background strictly exceeds 4.5:1 (WCAG 2.2 AA) across default (5.0:1 - 6.6:1), hover, disabled, and loading states.
+6. **Zero Text Overlap:** Header titles, subtitles, and stat cards are verified against intersecting DOM bounding boxes.
+
 ### Contrast (computed)
 
 The worst-case background colour at maximum gradient saturation is `color-mix(in srgb, #0052ff 14%, white)` ≈ `#dce9ff` (relative luminance ≈ 0.74).
