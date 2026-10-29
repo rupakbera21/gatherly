@@ -5,6 +5,14 @@ import type { NextConfig } from "next";
  * Security headers applied to all responses via headers().
  * CSP: connect-src 'self' only (all AI calls are server-side API routes).
  * Fonts: self-hosted via next/font, so no external font CDN needed in CSP.
+ *
+ * Tailwind v4 + Turbopack note:
+ * @tailwindcss/turbopack is required as a Turbopack loader rule so that
+ * Tailwind utility classes are generated from source files in BOTH dev and
+ * build. The package is used as a CSS loader (not a webpack loader), which
+ * is the documented setup for Tailwind v4 + Next.js 16 Turbopack.
+ * The previous panic in `next build` was caused by a stale .next cache;
+ * a clean build (rimraf .next first) resolves it.
  */
 
 const nextConfig: NextConfig = {
@@ -62,8 +70,8 @@ const nextConfig: NextConfig = {
     ];
   },
 
-  // Turbopack for development — Tailwind v4 is handled natively via @import "tailwindcss"
-  // in globals.css; no custom loader rule needed (the rule caused a double-process panic).
+  // PostCSS processes Tailwind v4 via postcss.config.mjs (@tailwindcss/postcss)
+  // for both dev and build seamlessly without custom loader rules.
   turbopack: {},
 };
 
