@@ -79,6 +79,18 @@ export function cleanStructuredStrings<T>(input: T): T {
     for (const [key, value] of Object.entries(input)) {
       cleanedObj[key] = cleanStructuredStrings(value);
     }
+    // Normalize aliases for event type in LLM outputs
+    if (!cleanedObj["type"] && (cleanedObj["eventType"] || cleanedObj["category"] || cleanedObj["event_type"])) {
+      cleanedObj["type"] = cleanedObj["eventType"] || cleanedObj["category"] || cleanedObj["event_type"];
+    }
+    // Normalize aliases for quote analysis
+    if (!cleanedObj["lineItems"] && (cleanedObj["line_items"] || cleanedObj["items"] || cleanedObj["breakdown"])) {
+      cleanedObj["lineItems"] = cleanedObj["line_items"] || cleanedObj["items"] || cleanedObj["breakdown"];
+    }
+    if (cleanedObj["summary"] && typeof cleanedObj["summary"] === "object") {
+      const s = cleanedObj["summary"] as Record<string, unknown>;
+      cleanedObj["summary"] = s.text || s.overview || s.description || Object.values(s).filter(v => typeof v === "string").join(" ") || "Quote analysis completed.";
+    }
     return cleanedObj as T;
   }
 

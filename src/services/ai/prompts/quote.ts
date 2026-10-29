@@ -20,12 +20,12 @@ export const QuoteAnalysisResultSchema = z.object({
       costMinor: z.number().int().nonnegative().optional(),
       notes: z.string().max(300).optional(),
     })
-  ),
+  ).default([]),
   paymentSchedule: z.string().max(1000).optional(),
   cancellationPolicy: z.string().max(1000).optional(),
-  hiddenFeesAndRisks: z.array(z.string().max(300)).default([]),
-  questionsToAskVendor: z.array(z.string().max(300)).default([]),
-  summary: z.string().max(1000),
+  hiddenFeesAndRisks: z.array(z.string().max(500)).default([]),
+  questionsToAskVendor: z.array(z.string().max(500)).default([]),
+  summary: z.string().max(2000).default("Quote analysis complete."),
 });
 
 export type QuoteAnalysisResult = z.infer<typeof QuoteAnalysisResultSchema>;

@@ -89,7 +89,7 @@ export async function POST(req: NextRequest) {
     logger.info("Quote analysis completed", {
       requestId,
       provider: result.provider,
-      lineItemsCount: result.data.lineItems.length,
+      lineItemsCount: result.data.lineItems?.length ?? 0,
       durationMs: duration,
     });
 

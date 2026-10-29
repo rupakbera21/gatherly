@@ -31,6 +31,7 @@ interface ChatMessage {
   text: string;
   patches?: PlanPatch[];
   applied?: boolean;
+  rejected?: boolean;
 }
 
 const FOCUSABLE =
@@ -180,9 +181,16 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
   function handleApplyPatch(msgId: string, patch: PlanPatch) {
     applyPatchToPlan(plan.id, patch);
     setMessages((prev) =>
-      prev.map((m) => (m.id === msgId ? { ...m, applied: true } : m))
+      prev.map((m) => (m.id === msgId ? { ...m, applied: true, rejected: false } : m))
     );
     setLiveAnnouncement("Plan changes applied successfully.");
+  }
+
+  function handleRejectPatch(msgId: string) {
+    setMessages((prev) =>
+      prev.map((m) => (m.id === msgId ? { ...m, rejected: true, applied: false } : m))
+    );
+    setLiveAnnouncement("Plan changes rejected.");
   }
 
   return (
@@ -254,11 +262,18 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
                         <Icon name="sparkles" size="xs" aria-hidden="true" />
                         <span>Proposed Plan Changes ({msg.patches.length})</span>
                       </span>
-                      {msg.applied && (
-                        <Badge variant="success" size="sm" icon="check">
-                          Applied
-                        </Badge>
-                      )}
+                      <div className="flex items-center gap-1.5">
+                        {msg.applied && (
+                          <Badge variant="success" size="sm" icon="check">
+                            Applied
+                          </Badge>
+                        )}
+                        {msg.rejected && (
+                          <Badge variant="neutral" size="sm" icon="x">
+                            Rejected
+                          </Badge>
+                        )}
+                      </div>
                     </div>
 
                     {msg.patches.map((patch, idx) => {
@@ -286,8 +301,15 @@ export function CopilotDrawer({ plan, isOpen, onClose, triggerRef }: CopilotDraw
                             </div>
                           ))}
 
-                          {!msg.applied && (
-                            <div className="pt-2 flex justify-end">
+                          {!msg.applied && !msg.rejected && (
+                            <div className="pt-2 flex justify-end gap-2">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={() => handleRejectPatch(msg.id)}
+                              >
+                                Reject
+                              </Button>
                               <Button
                                 variant="primary"
                                 size="sm"
