@@ -2,7 +2,7 @@
 
 /**
  * @module PlanQuotePage
- * @purpose Vendor Quote & Contract Auditor.
+ * @purpose Vendor Quote & Contract Analyzer.
  *          Parses unstructured quote text, compares against budget allocation,
  *          flags hidden fees/risks, and adds approved quotes to the vendor pipeline.
  * @rubric Tier 2 Features – Vendor Quote Analyzer & Budget Variance.
@@ -78,7 +78,7 @@ function QuotePageInner({ params }: QuotePageProps) {
   function handleAddAsVendor() {
     if (!result) return;
 
-    const vendorName = result.vendorName || "Audited Vendor";
+    const vendorName = result.vendorName || "Analyzed Vendor";
     const category = selectedCategory || result.category || "General";
     const estimatedCostMinor = result.totalCostMinor;
 
@@ -123,7 +123,7 @@ function QuotePageInner({ params }: QuotePageProps) {
       {/* Header */}
       <div>
         <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-neutral-900 dark:text-neutral-100 font-display">
-          Vendor Quote & Contract Auditor
+          Vendor Quote & Contract Analyzer
         </h2>
         <p className="text-sm text-neutral-600 dark:text-neutral-400">
           Paste any vendor proposal or email estimate. AI scrutinizes hidden fees, payment terms, and budget variance.
@@ -198,7 +198,7 @@ function QuotePageInner({ params }: QuotePageProps) {
           {!result && !isAuditing && (
             <Surface className="p-12 text-center text-neutral-400 text-xs space-y-2">
               <Icon name="file" size="lg" className="mx-auto text-neutral-300 dark:text-neutral-700" aria-hidden="true" />
-              <p className="font-semibold text-neutral-600 dark:text-neutral-300">No Quote Audited Yet</p>
+              <p className="font-semibold text-neutral-600 dark:text-neutral-300">No Quote Analyzed Yet</p>
               <p>Paste quote or agreement text on the left to review line items and hidden risks.</p>
             </Surface>
           )}
@@ -219,7 +219,7 @@ function QuotePageInner({ params }: QuotePageProps) {
                 <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-neutral-100 dark:border-neutral-800 pb-3">
                   <div>
                     <h3 className="font-bold text-base text-neutral-900 dark:text-neutral-100 font-display">
-                      {result.vendorName || "Audited Vendor Quote"}
+                      {result.vendorName || "Analyzed Vendor Quote"}
                     </h3>
                     <p className="text-xs text-neutral-500">
                       Category: {result.category || selectedCategory || "General"}

@@ -450,7 +450,7 @@ describe("UI Primitives Suite", () => {
       render(
         <PageHeader
           title="Budget Ledger"
-          subtitle="Real-time penny-accurate allocation"
+          subtitle="Real-time exact balance allocation"
         />
       );
       expect(screen.getByRole("heading", { level: 1 })).toHaveTextContent(

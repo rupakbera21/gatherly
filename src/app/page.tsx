@@ -1,8 +1,8 @@
 /**
  * Home page – the entry point to Gatherly.
- * Single clear purpose: describe your event to generate an operational plan.
+ * Single clear purpose: describe your event to generate an actionable event plan.
  * Cohesive layout featuring official brand identity, zero floating clutter,
- * INR currency alignment, and deterministic domain engine safeguards.
+ * INR currency alignment, and built-in budget safeguards.
  */
 
 import type { Metadata } from "next";

@@ -142,7 +142,7 @@ export function IntakeSection() {
                   AI Event Architecture Console
                 </span>
                 <span className="text-xs text-tertiary">
-                  Natural-language parsing with deterministic domain engine allocation
+                  Natural-language parsing with verified budget and timeline allocation
                 </span>
               </div>
             </div>

@@ -144,7 +144,7 @@ export default function PlanBudgetPage({ params }: BudgetPageProps) {
             <div>
               <div className="flex items-center gap-2 mb-1">
                 <span className="text-xs font-bold uppercase tracking-wider text-secondary">
-                  Penny-Accurate Ledger
+                  Exact Balance Ledger
                 </span>
                 <Badge variant="neutral" size="sm">
                   {categories.length} categories planned
