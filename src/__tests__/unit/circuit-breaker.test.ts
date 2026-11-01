@@ -35,11 +35,37 @@ describe("AI Circuit Breaker", () => {
   });
 
   it("handles Redis integration gracefully", async () => {
+    const origUrl = process.env["UPSTASH_REDIS_REST_URL"];
+    const origToken = process.env["UPSTASH_REDIS_REST_TOKEN"];
     process.env["UPSTASH_REDIS_REST_URL"] = "https://mock.upstash.io";
     process.env["UPSTASH_REDIS_REST_TOKEN"] = "mock-token";
 
-    // Even if redis network fails, circuit breaker operates via memory
-    await tripCircuit("groq", 5);
-    expect(await isCircuitOpen("groq")).toBe(true);
+    try {
+      // Even if redis network fails, circuit breaker operates via memory
+      await tripCircuit("groq", 5);
+      expect(await isCircuitOpen("groq")).toBe(true);
+    } finally {
+      if (origUrl) process.env["UPSTASH_REDIS_REST_URL"] = origUrl;
+      else delete process.env["UPSTASH_REDIS_REST_URL"];
+      if (origToken) process.env["UPSTASH_REDIS_REST_TOKEN"] = origToken;
+      else delete process.env["UPSTASH_REDIS_REST_TOKEN"];
+    }
+  });
+
+  it("opens circuit after trip and closes automatically after TTL expiry", async () => {
+    const originalDateNow = Date.now;
+    let mockTime = 1000000;
+    Date.now = jest.fn(() => mockTime);
+
+    try {
+      await tripCircuit("gemini", 60);
+      expect(await isCircuitOpen("gemini")).toBe(true);
+
+      // Advance clock by 61 seconds
+      mockTime += 61_000;
+      expect(await isCircuitOpen("gemini")).toBe(false);
+    } finally {
+      Date.now = originalDateNow;
+    }
   });
 });

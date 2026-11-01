@@ -26,6 +26,8 @@ import { checkRateLimit, rateLimitHeaders } from "@/services/ratelimit";
 
 const orchestrator = new AIOrchestrator();
 
+export const maxDuration = 60;
+
 const CopilotRequestSchema = z.object({
   plan: EventPlanSchema,
   userMessage: z.string().min(1).max(1000),

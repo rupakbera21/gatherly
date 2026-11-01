@@ -16,11 +16,14 @@ let _redis: Redis | null = null;
 const _localOpenUntil: Record<string, number> = {};
 
 function getRedis(): Redis | null {
+  const url = process.env["UPSTASH_REDIS_REST_URL"];
+  const token = process.env["UPSTASH_REDIS_REST_TOKEN"];
+  if (!url || !token) {
+    _redis = null;
+    return null;
+  }
   if (_redis) return _redis;
   try {
-    const url = process.env["UPSTASH_REDIS_REST_URL"];
-    const token = process.env["UPSTASH_REDIS_REST_TOKEN"];
-    if (!url || !token) return null;
     _redis = new Redis({ url, token });
     return _redis;
   } catch {

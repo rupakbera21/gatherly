@@ -263,4 +263,38 @@ describe("GeminiProvider Unit Tests", () => {
       expect(details.message).toContain("quota/unavailable");
     }
   });
+
+  it("13. AbortController actually aborts via timer and passes abortSignal to SDK", async () => {
+    jest.useFakeTimers();
+    let capturedSignal: AbortSignal | undefined;
+
+    mockGenerateContent.mockImplementation((params) => {
+      capturedSignal = params?.config?.abortSignal;
+      return new Promise((resolve, reject) => {
+        if (capturedSignal) {
+          capturedSignal.addEventListener("abort", () => {
+            reject(new Error("The operation was aborted."));
+          });
+        }
+      });
+    });
+
+    const provider = new GeminiProvider();
+    const promise = provider.generateStructured(
+      "test",
+      TestSchema,
+      { systemPrompt: "sys", userPrompt: "user" },
+      { timeoutMs: 20_000 }
+    );
+
+    expect(capturedSignal).toBeDefined();
+    expect(capturedSignal?.aborted).toBe(false);
+
+    // Advance fake timers by 20,000ms
+    jest.advanceTimersByTime(20_000);
+
+    await expect(promise).rejects.toThrow("Gemini timed out after 20000ms");
+    expect(capturedSignal?.aborted).toBe(true);
+    jest.useRealTimers();
+  });
 });

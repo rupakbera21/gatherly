@@ -11,6 +11,7 @@ import { z } from "zod";
 import { AIOrchestrator } from "@/services/ai/orchestrator";
 import {
   buildQuoteAnalysisPrompt,
+  QuoteAnalysisResult,
   QuoteAnalysisResultSchema,
 } from "@/services/ai/prompts/quote";
 import {
@@ -25,6 +26,8 @@ import { logger } from "@/services/logger";
 import { checkRateLimit, rateLimitHeaders } from "@/services/ratelimit";
 
 const orchestrator = new AIOrchestrator();
+
+export const maxDuration = 60;
 
 const QuoteAnalysisRequestSchema = z.object({
   quoteText: z.string().min(10).max(8000),
@@ -73,7 +76,7 @@ export async function POST(req: NextRequest) {
       language,
     });
 
-    const result = await orchestrator.execute({
+    const result = await orchestrator.execute<QuoteAnalysisResult>({
       task: "analyze-quote",
       prompt,
       schema: QuoteAnalysisResultSchema,

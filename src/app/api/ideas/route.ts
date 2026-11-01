@@ -34,6 +34,8 @@ const IdeasRequestSchema = z.object({
 
 const orchestrator = new AIOrchestrator();
 
+export const maxDuration = 60;
+
 export async function POST(req: NextRequest) {
   const requestId = getRequestId(req);
   const hashedIp = getHashedIp(req);

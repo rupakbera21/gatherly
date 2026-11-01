@@ -12,6 +12,7 @@ import { z } from "zod";
 import { AIOrchestrator } from "@/services/ai/orchestrator";
 import {
   buildIntakePrompt,
+  IntakeResult,
   IntakeResultSchema,
 } from "@/services/ai/prompts/intake";
 import {
@@ -30,6 +31,8 @@ const IntakeRequestSchema = z.object({
   defaultCurrency: z.string().length(3).toUpperCase().optional(),
   language: z.string().max(10).optional(),
 });
+
+export const maxDuration = 60;
 
 const orchestrator = new AIOrchestrator();
 
@@ -88,7 +91,7 @@ export async function POST(req: NextRequest) {
       language,
     });
 
-    const result = await orchestrator.execute({
+    const result = await orchestrator.execute<IntakeResult>({
       task: "parse-intake",
       schema: IntakeResultSchema,
       prompt,

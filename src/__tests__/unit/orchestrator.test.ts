@@ -309,4 +309,74 @@ describe("AI Orchestrator Unit Tests", () => {
     expect(fakeGemini404.callCount).toBe(1);
     expect(fakeGroq.callCount).toBe(1);
   });
+
+  it("9. Gemini timeout immediately trips circuit breaker and falls over to Groq with zero retries", async () => {
+    const fakeGeminiTimeout = new FakeProvider("gemini", async () => {
+      throw createErrorWithDetails({
+        type: "transient",
+        provider: "gemini",
+        message: "Gemini timed out after 20000ms",
+        retryable: true,
+      });
+    });
+
+    const fakeGroq = new FakeProvider("groq", async () => ({
+      message: "Groq output after Gemini timeout",
+    }));
+
+    const orchestrator = new AIOrchestrator({
+      primaryProvider: fakeGeminiTimeout,
+      fallbackProvider: fakeGroq,
+      enableCache: false,
+    });
+
+    const result = await orchestrator.execute({
+      task: "test-timeout-fallback",
+      schema: SimpleSchema,
+      prompt: { systemPrompt: "sys", userPrompt: "user" },
+    });
+
+    expect(result.provider).toBe("groq");
+    expect(result.data.message).toBe("Groq output after Gemini timeout");
+    // Crucial: Must be called exactly once; must NOT waste retries on a timed-out call
+    expect(fakeGeminiTimeout.callCount).toBe(1);
+    expect(fakeGroq.callCount).toBe(1);
+  });
+
+  it("10. Both providers time out -> trips both circuit breakers and throws for baseline degradation", async () => {
+    const fakeGeminiTimeout = new FakeProvider("gemini", async () => {
+      throw createErrorWithDetails({
+        type: "transient",
+        provider: "gemini",
+        message: "Gemini timed out after 20000ms",
+        retryable: true,
+      });
+    });
+
+    const fakeGroqTimeout = new FakeProvider("groq", async () => {
+      throw createErrorWithDetails({
+        type: "transient",
+        provider: "groq",
+        message: "Groq request timed out after 20000ms",
+        retryable: true,
+      });
+    });
+
+    const orchestrator = new AIOrchestrator({
+      primaryProvider: fakeGeminiTimeout,
+      fallbackProvider: fakeGroqTimeout,
+      enableCache: false,
+    });
+
+    await expect(
+      orchestrator.execute({
+        task: "test-double-timeout",
+        schema: SimpleSchema,
+        prompt: { systemPrompt: "sys", userPrompt: "user" },
+      })
+    ).rejects.toThrow("Generation failed on both primary and backup providers");
+
+    expect(fakeGeminiTimeout.callCount).toBe(1);
+    expect(fakeGroqTimeout.callCount).toBe(1);
+  });
 });

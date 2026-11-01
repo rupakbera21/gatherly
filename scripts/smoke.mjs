@@ -64,7 +64,7 @@ async function smokeGemini() {
         contents: [{ parts: [{ text: "Reply with the single word: ready" }] }],
         generationConfig: { maxOutputTokens: 100 },
       }),
-      signal: AbortSignal.timeout(30000),
+      signal: AbortSignal.timeout(20000),
     });
 
     if (!res.ok) {

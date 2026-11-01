@@ -9,7 +9,7 @@
 
 import { z } from "zod";
 import { logger } from "../logger";
-import { stripReasoningTags } from "./cleaner";
+import { extractJsonFromText } from "./cleaner";
 import {
   AIErrorDetails,
   GenerationOptions,
@@ -146,8 +146,8 @@ export class GroqProvider implements LLMProvider {
         });
       }
 
-      // Strip reasoning tags BEFORE JSON.parse to handle models that emit <think>…</think>
-      const cleanedContent = stripReasoningTags(content);
+      // Extract valid JSON from content (strips <think> tags, markdown fences, trailing prose, repairs truncated brackets)
+      const cleanedContent = extractJsonFromText(content);
 
       let parsedJson: unknown;
       try {
@@ -213,7 +213,7 @@ export class GroqProvider implements LLMProvider {
 
     const model = process.env["GROQ_MODEL"] || "qwen/qwen3.8-27b";
     const controller = new AbortController();
-    const timeoutMs = opts.timeoutMs ?? 30_000;
+    const timeoutMs = opts.timeoutMs ?? 20_000;
     const timer = setTimeout(() => controller.abort(), timeoutMs);
 
     try {

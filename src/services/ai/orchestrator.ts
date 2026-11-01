@@ -261,13 +261,24 @@ export class AIOrchestrator {
         lastError = err instanceof Error ? err : new Error(String(err));
         const aiDetails = (err as { aiDetails?: AIErrorDetails })?.aiDetails;
 
-        if (aiDetails?.type === "quota") {
+        const isTimeout =
+          aiDetails?.message.includes("timed out") ||
+          aiDetails?.message.includes("aborted") ||
+          lastError.message.includes("timed out") ||
+          lastError.message.includes("aborted");
+
+        if (aiDetails?.type === "quota" || isTimeout) {
           // Trip circuit breaker immediately for 60s
           await tripCircuit(this.primary.name, 60);
-          logger.warn("Primary quota exhausted, failing over to backup immediately", {
-            task: params.task,
-            err: lastError.message,
-          });
+          logger.warn(
+            isTimeout
+              ? "Primary timed out, tripping circuit breaker and failing over to backup immediately"
+              : "Primary quota exhausted, failing over to backup immediately",
+            {
+              task: params.task,
+              err: lastError.message,
+            }
+          );
         } else {
           logger.warn("Primary failed after retries, failing over to backup", {
             task: params.task,
@@ -307,7 +318,13 @@ export class AIOrchestrator {
         const fbError = fallbackErr instanceof Error ? fallbackErr : new Error(String(fallbackErr));
         const fbDetails = (fallbackErr as { aiDetails?: AIErrorDetails })?.aiDetails;
 
-        if (fbDetails?.type === "quota") {
+        const isFbTimeout =
+          fbDetails?.message.includes("timed out") ||
+          fbDetails?.message.includes("aborted") ||
+          fbError.message.includes("timed out") ||
+          fbError.message.includes("aborted");
+
+        if (fbDetails?.type === "quota" || isFbTimeout) {
           await tripCircuit(this.fallback.name, 60);
         }
 
@@ -357,8 +374,13 @@ export class AIOrchestrator {
       } catch (err: unknown) {
         const details = (err as { aiDetails?: AIErrorDetails })?.aiDetails;
 
-        // Quota error: NO RETRIES! Fail immediately so orchestrator switches provider
-        if (details?.type === "quota") {
+        const isTimeout =
+          details?.message.includes("timed out") ||
+          details?.message.includes("aborted") ||
+          (err instanceof Error && (err.message.includes("timed out") || err.message.includes("aborted")));
+
+        // Quota or Timeout: NO RETRIES! Fail immediately so orchestrator switches provider
+        if (details?.type === "quota" || isTimeout) {
           throw err;
         }
 

@@ -9,6 +9,7 @@
 import { GoogleGenAI } from "@google/genai";
 import { z } from "zod";
 import { logger } from "../logger";
+import { extractJsonFromText } from "./cleaner";
 import {
   AIErrorDetails,
   GenerationOptions,
@@ -54,12 +55,24 @@ export class GeminiProvider implements LLMProvider {
     const timeoutMs = opts.timeoutMs ?? 20_000;
 
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    let timer: NodeJS.Timeout | null = null;
+    const timeoutPromise = new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        controller.abort();
+        reject(
+          this.buildError({
+            type: "transient",
+            message: `Gemini timed out after ${timeoutMs}ms`,
+            retryable: true,
+          })
+        );
+      }, timeoutMs);
+    });
 
     try {
       logger.info("Calling Gemini", { task, model, timeoutMs });
 
-      const response = await ai.models.generateContent({
+      const contentPromise = ai.models.generateContent({
         model,
         contents: prompt.userPrompt,
         config: {
@@ -68,10 +81,13 @@ export class GeminiProvider implements LLMProvider {
           maxOutputTokens: opts.maxTokens,
           temperature: opts.temperature ?? 0.2,
           abortSignal: controller.signal,
+          httpOptions: { timeout: timeoutMs },
         },
       });
 
-      clearTimeout(timer);
+      const response = await Promise.race([contentPromise, timeoutPromise]);
+
+      if (timer) clearTimeout(timer);
 
       const text = response.text?.trim() || "";
       if (!text) {
@@ -84,7 +100,8 @@ export class GeminiProvider implements LLMProvider {
 
       let parsedJson: unknown;
       try {
-        parsedJson = JSON.parse(text);
+        const jsonText = extractJsonFromText(text);
+        parsedJson = JSON.parse(jsonText);
       } catch (parseErr) {
         throw this.buildError({
           type: "schema",
@@ -104,7 +121,7 @@ export class GeminiProvider implements LLMProvider {
 
       return parseResult.data;
     } catch (err: unknown) {
-      clearTimeout(timer);
+      if (timer) clearTimeout(timer);
 
       // If already an AI details error
       if (err && typeof err === "object" && "aiDetails" in err) {

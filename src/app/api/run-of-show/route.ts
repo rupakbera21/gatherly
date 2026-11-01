@@ -27,6 +27,8 @@ import { checkRateLimit, rateLimitHeaders } from "@/services/ratelimit";
 
 const orchestrator = new AIOrchestrator();
 
+export const maxDuration = 60;
+
 const RunOfShowRequestSchema = z.object({
   profile: EventProfileSchema,
   eventWindow: z
