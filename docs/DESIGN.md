@@ -4,7 +4,7 @@
 
 1. **Operational Clarity Over Decoration:** Event plans are real-world operational cue sheets; mathematical precision, tabular alignment, and calm readability always supersede visual flourish.
 2. **One Primary For Action:** A single cobalt ultramarine color drives every primary button and active selection across every screen, ensuring immediate visual predictability.
-3. **The Cue Sheet is the Hero:** Structural identity stems from the authentic vernacular of event production—time-ordered run sheets, call lists, and penny-accurate ledgers—not SaaS cards.
+3. **The Cue Sheet is the Hero:** Structural identity stems from the authentic vernacular of event production—time-ordered run sheets, call lists, and exact balance ledgers—not SaaS cards.
 4. **Instant, Reversible, and Reachable:** Every action responds under 100 ms, supports one-click undo, guarantees minimum 44 px touch targets, and provides zero-violation keyboard accessibility.
 5. **No AI Clichés or Emoji:** Interfaces speak in calm, human sentence case; artificial sparkle badges, emoji decorators, and trailing arrows are strictly eliminated.
 
@@ -174,7 +174,7 @@ The worst-case background colour at maximum gradient saturation is `color-mix(in
 | [Gatherly Logo]                            [Events (3)] [Accessibility] |
 +-------------------------------------------------------------------------+
 |                                                                         |
-| Turn messy event ideas into a clear, reliable operational plan.         |
+| Turn messy event ideas into a clear, reliable event plan.         |
 | Real budget ledgers, backward timelines, and day-of run sheets.         |
 |                                                                         |
 | +---------------------------------------------------------------------+ |

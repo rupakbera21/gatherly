@@ -1,7 +1,7 @@
 # Gatherly – Verification & Test Suite Documentation
 
-> **Test Status:** 37 Test Suites Passed | 294 Tests Passed | 0 Snapshots | 100% Pass Rate  
-> **Execution Duration:** ~7.2s (local standard) / ~25s (with concurrency stress tests)  
+> **Test Status:** 39 Test Suites Passed | 322 Tests Passed | 0 Snapshots | 100% Pass Rate  
+> **Execution Duration:** ~10s (standard local) / ~25s (with concurrency stress tests)  
 > **Layout Guard Status:** 32 of 32 Checks Passed across 360px, 390px, 768px, 1280px in Light & Dark modes
 
 ---
@@ -44,7 +44,14 @@ All test suites and test counts below are directly generated and verified from t
 | 30 | **AI Orchestrator** | `src/__tests__/unit/orchestrator.test.ts` | 8 | Primary provider success, quota/403/404 error immediate failover to Groq, backoff retries, schema repair, coalescing |
 | 31 | **Announce Accessibility Utility** | `src/__tests__/unit/announce.test.ts` | 2 | Accessible polite live-region announcements, timeout debounce, and missing DOM node fallback |
 | 32 | **UI Design System Primitives Suite** | `src/__tests__/unit/primitives.test.tsx` | 29 | Complete verification of Button, Input, Textarea, Select, Checkbox, Radio, Switch, Tabs, Badge, Status, Surface, Table, Dialog, Drawer, Sheet, Toast, Progress, Skeleton, EmptyState, PageHeader, Stat, and all 40 in-repo SVG Icons |
-| **Total** | **32 Suites** | | **259** | **All 259 Tests Passing (100% Pass Rate)** |
+| 33 | **Hare-Niemeyer Budget Allocation** | `src/__tests__/unit/allocation.test.ts` | 9 | Deterministic proportional allocation, remainder distribution, exact penny conservation |
+| 34 | **Theme Contrast & WCAG Compliance** | `src/__tests__/unit/contrast.test.ts` | 5 | WCAG 2.2 AA 4.5:1 text contrast ratios across light and dark mode design tokens |
+| 35 | **Security Headers & CSP Verification** | `src/__tests__/unit/csp.test.ts` | 3 | Strict CSP directives without unsafe-eval, frame-ancestors, HSTS, and X-Content-Type-Options |
+| 36 | **Prompt Injection Defense** | `src/__tests__/unit/prompt-injection.test.ts` | 4 | Neutralization of adversarial jailbreaks, role hijacking, and instruction delimiters |
+| 37 | **Brand Background & Mesh Tokens** | `src/__tests__/unit/brand-bg.test.ts` | 4 | Background gradient assets, subtle opacity layers, dark mode blend tokens |
+| 38 | **Intake Schema Normalization** | `src/__tests__/unit/intake-normalization.test.ts` | 7 | String-to-number coercion, enum case normalization, safe optional defaults, reject invalid |
+| 39 | **Quote Schema Sanitization** | `src/__tests__/unit/quote-sanitization.test.ts` | 8 | Negative cost rectification, line item coercion, extra key stripping, 422 error on garbage |
+| **Total** | **39 Suites** | | **322** | **All 322 Tests Passing (100% Pass Rate)** |
 
 ---
 

@@ -20,6 +20,6 @@ Standard floating-point arithmetic (`0.1 + 0.2 === 0.30000000000000004`) in web 
    - Validated across all unit and property-based test suites.
 
 ## Consequences
-- **Positive:** Perfect penny-accurate accounting across all currencies (USD, EUR, GBP, JPY, INR, AUD, CAD).
+- **Positive:** Perfect exact integer accounting across all currencies (USD, EUR, GBP, JPY, INR, AUD, CAD).
 - **Positive:** Zero-LLM what-if sandbox: users can adjust budget sliders and see instant, mathematically guaranteed category updates without latency or API costs.
 - **Trade-off:** Percentage values stored alongside categories must be kept synchronized when user manually edits integer cents directly.
