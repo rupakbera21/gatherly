@@ -19,9 +19,10 @@ import { EventPlan } from "@/domain/types";
 expect.extend(toHaveNoViolations);
 
 // Mock the Zustand store
+const mockApplyPatchToPlan = jest.fn();
 jest.mock("@/store", () => ({
   useGatherlyStore: () => ({
-    applyPatchToPlan: jest.fn(),
+    applyPatchToPlan: mockApplyPatchToPlan,
   }),
 }));
 
@@ -165,5 +166,69 @@ describe("CopilotDrawer Accessibility Tests", () => {
     } finally {
       global.fetch = originalFetch;
     }
+  });
+
+  it("rejecting a patch leaves store unchanged and marks patch rejected", async () => {
+    mockApplyPatchToPlan.mockClear();
+    const originalFetch = global.fetch;
+    global.fetch = jest.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        reply: "Here is a proposal to add a fireworks vendor.",
+        suggestedPatches: [
+          {
+            op: "addVendorTask",
+            category: "Entertainment",
+            name: "Fireworks vendor",
+            estimatedCostMinor: 7500000,
+          },
+        ],
+      }),
+    } as Response);
+
+    try {
+      render(<CopilotDrawer plan={mockPlan} isOpen={true} onClose={() => undefined} />);
+      const input = screen.getByPlaceholderText(/ask copilot/i);
+      const sendBtn = screen.getByRole("button", { name: /^send$/i });
+
+      await act(async () => {
+        fireEvent.change(input, { target: { value: "Add fireworks" } });
+        fireEvent.click(sendBtn);
+      });
+
+      expect(screen.getByText("Add fireworks")).toBeDefined();
+      expect(screen.getByText(/proposed plan changes/i)).toBeDefined();
+
+      // Click Reject button
+      const rejectBtn = screen.getByRole("button", { name: /reject/i });
+      await act(async () => {
+        fireEvent.click(rejectBtn);
+      });
+
+      // Verify patch is marked Rejected and store was NOT called
+      expect(screen.getByText(/^rejected$/i)).toBeDefined();
+      expect(mockApplyPatchToPlan).not.toHaveBeenCalled();
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it("restores focus to triggerRef when closed", () => {
+    const trigger = document.createElement("button");
+    trigger.setAttribute("id", "copilot-trigger");
+    document.body.appendChild(trigger);
+    const triggerRef = { current: trigger };
+
+    const { rerender } = render(
+      <CopilotDrawer plan={mockPlan} isOpen={true} onClose={() => undefined} triggerRef={triggerRef} />
+    );
+
+    // Re-render as closed
+    rerender(
+      <CopilotDrawer plan={mockPlan} isOpen={false} onClose={() => undefined} triggerRef={triggerRef} />
+    );
+
+    expect(document.activeElement).toBe(trigger);
+    document.body.removeChild(trigger);
   });
 });

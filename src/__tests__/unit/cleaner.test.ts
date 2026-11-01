@@ -8,6 +8,8 @@
 import {
   cleanModelText,
   cleanStructuredStrings,
+  extractJsonFromText,
+  repairTruncatedJson,
   stripReasoningTags,
 } from "@/services/ai/cleaner";
 
@@ -134,5 +136,56 @@ describe("cleanStructuredStrings", () => {
     expect(cleanStructuredStrings(true)).toBe(true);
     expect(cleanStructuredStrings(null)).toBe(null);
     expect(cleanStructuredStrings(undefined)).toBe(undefined);
+  });
+
+  it("normalizes alias keys in object inputs (event_type to type, line_items to lineItems)", () => {
+    const input = {
+      event_type: "wedding",
+      line_items: [{ description: "Food", cost: 100 }],
+      summary: { text: "Analyzed budget successfully" },
+    };
+    const result = cleanStructuredStrings(input) as Record<string, unknown>;
+    expect(result["type"]).toBe("wedding");
+    expect(result["lineItems"]).toBeDefined();
+    expect(result["summary"]).toBe("Analyzed budget successfully");
+  });
+});
+
+describe("extractJsonFromText and repairTruncatedJson", () => {
+  it("extracts clean JSON from markdown code fences", () => {
+    const input = '```json\n{"status": "ok", "count": 10}\n```';
+    const result = extractJsonFromText(input);
+    expect(result).toBe('{"status": "ok", "count": 10}');
+    expect(JSON.parse(result)).toEqual({ status: "ok", count: 10 });
+  });
+
+  it("extracts JSON while removing <think> tags and trailing conversational prose", () => {
+    const input = '<think>Let me formulate the response</think>Here is the plan:\n{"budget": 5000}\nHope this helps you plan your event!';
+    const result = extractJsonFromText(input);
+    expect(result).toBe('{"budget": 5000}');
+    expect(JSON.parse(result)).toEqual({ budget: 5000 });
+  });
+
+  it("repairs truncated JSON cut off at bracket/brace level", () => {
+    const truncated = '{"title": "Gala", "milestones": [{"name": "Book hall"';
+    const repaired = repairTruncatedJson(truncated);
+    expect(() => JSON.parse(repaired)).not.toThrow();
+    const parsed = JSON.parse(repaired);
+    expect(parsed.title).toBe("Gala");
+    expect(parsed.milestones[0].name).toBe("Book hall");
+  });
+
+  it("repairs truncated string and closes outer object", () => {
+    const truncated = '{"notes": "Pending venue confirmation';
+    const repaired = repairTruncatedJson(truncated);
+    expect(() => JSON.parse(repaired)).not.toThrow();
+    const parsed = JSON.parse(repaired);
+    expect(parsed.notes).toBe("Pending venue confirmation");
+  });
+
+  it("handles unclosed <think> tag gracefully", () => {
+    const input = '<think>Model ran out of tokens before finishing think\n{"data": 123}';
+    const result = stripReasoningTags(input);
+    expect(result).toBe("");
   });
 });

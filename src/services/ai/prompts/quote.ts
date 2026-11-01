@@ -9,7 +9,62 @@
 import { z } from "zod";
 import { PromptPayload } from "../types";
 
-export const QuoteAnalysisResultSchema = z.object({
+export function sanitizeQuoteOutput(raw: unknown): unknown {
+  if (!raw || typeof raw !== "object" || Array.isArray(raw)) {
+    return raw;
+  }
+  const obj = { ...(raw as Record<string, unknown>) };
+
+  // Parse or sanitize totalCostMinor
+  if (obj["totalCostMinor"] !== undefined && obj["totalCostMinor"] !== null) {
+    const parsed = typeof obj["totalCostMinor"] === "string"
+      ? parseInt(obj["totalCostMinor"].replace(/[^0-9-]/g, ""), 10)
+      : Number(obj["totalCostMinor"]);
+    obj["totalCostMinor"] = isNaN(parsed) ? 0 : Math.max(0, Math.abs(Math.round(parsed)));
+  }
+
+  // Ensure lineItems is an array with valid non-negative costs
+  const rawItems = obj["lineItems"] ?? obj["line_items"] ?? obj["items"];
+  if (Array.isArray(rawItems)) {
+    obj["lineItems"] = rawItems.map((item) => {
+      if (!item || typeof item !== "object") return { description: "Line item", costMinor: 0 };
+      const it = { ...(item as Record<string, unknown>) };
+      const desc = typeof it.description === "string" && it.description.trim() ? it.description.trim() : "Line item";
+      let cost: number | undefined = undefined;
+      if (it.costMinor !== undefined && it.costMinor !== null) {
+        const c = typeof it.costMinor === "string"
+          ? parseInt(it.costMinor.replace(/[^0-9-]/g, ""), 10)
+          : Number(it.costMinor);
+        cost = isNaN(c) ? 0 : Math.max(0, Math.abs(Math.round(c)));
+      }
+      return {
+        description: desc.slice(0, 200),
+        costMinor: cost,
+        notes: typeof it.notes === "string" ? it.notes.slice(0, 300) : undefined,
+      };
+    });
+  } else {
+    obj["lineItems"] = [];
+  }
+
+  // Ensure summary is string
+  if (obj["summary"] && typeof obj["summary"] === "object") {
+    const s = obj["summary"] as Record<string, unknown>;
+    obj["summary"] = s.text || s.overview || s.description || "Quote analysis complete.";
+  }
+
+  // Ensure arrays for hiddenFeesAndRisks and questionsToAskVendor
+  if (!Array.isArray(obj["hiddenFeesAndRisks"])) {
+    obj["hiddenFeesAndRisks"] = typeof obj["hiddenFeesAndRisks"] === "string" ? [obj["hiddenFeesAndRisks"]] : [];
+  }
+  if (!Array.isArray(obj["questionsToAskVendor"])) {
+    obj["questionsToAskVendor"] = typeof obj["questionsToAskVendor"] === "string" ? [obj["questionsToAskVendor"]] : [];
+  }
+
+  return obj;
+}
+
+export const BaseQuoteAnalysisResultSchema = z.object({
   vendorName: z.string().max(200).optional(),
   category: z.string().max(100).optional(),
   totalCostMinor: z.number().int().nonnegative().optional(),
@@ -28,7 +83,12 @@ export const QuoteAnalysisResultSchema = z.object({
   summary: z.string().max(2000).default("Quote analysis complete."),
 });
 
-export type QuoteAnalysisResult = z.infer<typeof QuoteAnalysisResultSchema>;
+export type QuoteAnalysisResult = z.infer<typeof BaseQuoteAnalysisResultSchema>;
+
+export const QuoteAnalysisResultSchema: z.ZodType<QuoteAnalysisResult> = z.preprocess(
+  sanitizeQuoteOutput,
+  BaseQuoteAnalysisResultSchema
+) as unknown as z.ZodType<QuoteAnalysisResult>;
 
 export function buildQuoteAnalysisPrompt(params: {
   quoteText: string;

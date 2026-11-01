@@ -26,7 +26,105 @@ export function stripReasoningTags(raw: string): string {
     // Remove everything between opening and closing tag (greedy within the pair, not across pairs)
     result = result.replace(new RegExp(`<${tag}>[\\s\\S]*?<\\/${tag}>`, "gi"), "");
   }
+  // Also strip any unclosed tag at end of string (model cut off)
+  result = result.replace(/<(?:think|reasoning|reflection|scratchpad)>[\s\S]*$/i, "");
   return result.trim();
+}
+
+/**
+ * Balance and close truncated JSON strings cut off by token limits.
+ */
+export function repairTruncatedJson(text: string): string {
+  if (!text || typeof text !== "string") return "{}";
+  let inString = false;
+  let isEscaped = false;
+  const stack: string[] = [];
+
+  for (let i = 0; i < text.length; i++) {
+    const char = text[i];
+    if (isEscaped) {
+      isEscaped = false;
+      continue;
+    }
+    if (char === "\\") {
+      isEscaped = true;
+      continue;
+    }
+    if (char === '"') {
+      inString = !inString;
+      continue;
+    }
+    if (!inString) {
+      if (char === "{" || char === "[") {
+        stack.push(char === "{" ? "}" : "]");
+      } else if (char === "}" || char === "]") {
+        if (stack.length > 0 && stack[stack.length - 1] === char) {
+          stack.pop();
+        }
+      }
+    }
+  }
+
+  let repaired = text;
+  if (inString) {
+    repaired += '"';
+  }
+
+  // Remove trailing comma before closing
+  repaired = repaired.replace(/,\s*$/, "");
+
+  while (stack.length > 0) {
+    repaired += stack.pop();
+  }
+
+  return repaired;
+}
+
+/**
+ * Robustly extract valid JSON from model responses containing:
+ * - <think>...</think> chain-of-thought tags
+ * - Markdown code fences (```json ... ``` or ``` ... ```)
+ * - Trailing conversational prose
+ * - Truncated JSON brackets/braces
+ */
+export function extractJsonFromText(raw: string): string {
+  if (!raw || typeof raw !== "string") return "";
+
+  // 1. Strip reasoning blocks
+  let text = stripReasoningTags(raw);
+
+  // 2. Extract from markdown code fences
+  const fencedMatch = text.match(/```(?:json)?\s*([\s\S]*?)\s*```/i);
+  if (fencedMatch && fencedMatch[1]) {
+    text = fencedMatch[1].trim();
+  }
+
+  // 3. Extract balanced JSON if trailing prose exists
+  const firstBrace = text.indexOf("{");
+  const firstBracket = text.indexOf("[");
+
+  let startIdx = -1;
+  let isObject = true;
+
+  if (firstBrace !== -1 && (firstBracket === -1 || firstBrace < firstBracket)) {
+    startIdx = firstBrace;
+    isObject = true;
+  } else if (firstBracket !== -1) {
+    startIdx = firstBracket;
+    isObject = false;
+  }
+
+  if (startIdx !== -1) {
+    const endChar = isObject ? "}" : "]";
+    const lastIdx = text.lastIndexOf(endChar);
+    if (lastIdx > startIdx) {
+      text = text.slice(startIdx, lastIdx + 1);
+    } else {
+      text = repairTruncatedJson(text.slice(startIdx));
+    }
+  }
+
+  return text.trim();
 }
 
 /**
